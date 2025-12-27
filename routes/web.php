@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\GudangController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\KategoriController;
@@ -65,3 +66,14 @@ Route::get('/barang-keluar/create', [BarangKeluarController::class, 'create'])->
 Route::post('/barang-keluar/store', [BarangKeluarController::class, 'store'])->name('barang-keluar.store');
 Route::put('/barang-keluar/{barang_keluar}', [BarangKeluarController::class, 'update'])->name('barang-keluar.update');
 Route::delete('/barang-keluar/{barang_keluar}', [BarangKeluarController::class, 'destroy'])->name('barang-keluar.destroy');
+
+// Authentication routes
+Route::get('/login', function () {
+    if (Auth::check()) {
+        return redirect('/');
+    }
+    return view('auth.Login');
+})->name('login.show');
+
+Route::post('/login', [LoginController::class, 'login'])->name('login');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

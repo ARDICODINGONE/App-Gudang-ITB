@@ -59,7 +59,7 @@
                     <div class="d-inline-flex align-items-center">
                         <i class="fa fa-users fa-2x text-primary"></i>
                         <div class="ms-4">
-                            <a href="{{ url('/user') }}">
+                            <a href="{{ url('/login') }}">
                                 <h6 class="text-uppercase mb-2">User</h6>
                             </a>
 
@@ -72,7 +72,7 @@
                     <div class="d-inline-flex align-items-center">
                         <i class="fa fa-file-alt fa-2x text-primary"></i>
                         <div class="ms-4">
-                            <a href="{{ url('/laporan') }}">
+                            <a href="{{ url('/shop') }}">
                                 <h6 class="text-uppercase mb-2">Laporan</h6>
                             </a>
 

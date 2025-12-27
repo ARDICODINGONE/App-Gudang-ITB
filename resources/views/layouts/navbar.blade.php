@@ -109,10 +109,33 @@
                         </div>
                         <a href="single.html" class="nav-item nav-link">Keranjang</a>
                     </div>
-                    <a href="" class="btn btn-primary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"><i
-                            class="fa fa-user me-2"></i> User</a>
-                </div>
-            </nav>
+                    <div class="dropdown">
+                        <a href="#" class="btn btn-primary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"
+                            data-bs-toggle="dropdown">
+                            <small><i class="fa fa-user me-2"></i>
+                                @auth
+                                    {{ auth()->user()->nama ?? auth()->user()->nama }}
+                                @else
+                                    Pengguna
+                                @endauth
+                            </small>
+                        </a>
+                        <div class="dropdown-menu rounded">
+                            @guest
+                                <a href="{{ route('login.show') }}" class="dropdown-item">Login</a>
+                            @endguest
+
+                            @auth
+                                <a href="#" class="dropdown-item">Profile</a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item">Log Out</button>
+                                </form>
+                            @endauth
+                        </div>
+                    </div>
+                    </div>
+                </nav>
+            </div>
         </div>
     </div>
-</div>
