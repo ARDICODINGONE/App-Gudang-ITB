@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form id="formEditGudang" action="" method="POST">
+      <form id="formEditGudang" action="" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT') <div class="modal-body">
           <div class="row">
@@ -25,6 +25,15 @@
             <div class="col mb-3">
               <label class="form-label">Lokasi</label>
               <input type="text" id="edit_lokasi" name="lokasi" class="form-control" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col mb-3">
+              <label class="form-label">Gambar (opsional)</label>
+              <input type="file" id="edit_images" name="images" class="form-control" accept="image/*" onchange="previewEditImage(this)">
+              <div class="mt-2">
+                <img id="edit_image_preview" src="" alt="Preview" style="max-height:120px; display:none; object-fit:cover;" class="rounded">
+              </div>
             </div>
           </div>
         </div>

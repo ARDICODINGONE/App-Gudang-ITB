@@ -21,6 +21,7 @@ class gudang extends Model
         'kode_gudang',
         'nama_gudang',
         'lokasi',
+        'images',
     ];
 
     // Relasi ke Stok

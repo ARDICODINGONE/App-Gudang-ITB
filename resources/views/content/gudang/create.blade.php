@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form action="{{ route('gudang.store') }}" method="POST">
+      <form action="{{ route('gudang.store') }}" method="POST" enctype="multipart/form-data">
         @csrf <div class="modal-body">
           <div class="row">
             <div class="col mb-3">
@@ -27,6 +27,15 @@
               <label for="lokasi" class="form-label">Lokasi</label>
               <input type="text" id="lokasi" name="lokasi" class="form-control"
                 placeholder="Contoh: Jakarta Selatan" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col mb-3">
+              <label for="images" class="form-label">Gambar (opsional)</label>
+              <input type="file" id="images" name="images" class="form-control" accept="image/*" onchange="previewCreateImage(this)">
+              <div class="mt-2">
+                <img id="create_image_preview" src="" alt="Preview" style="max-height:120px; display:none; object-fit:cover;" class="rounded">
+              </div>
             </div>
           </div>
         </div>

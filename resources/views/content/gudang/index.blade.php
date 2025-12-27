@@ -25,55 +25,47 @@
             {{-- Jika ingin menampilkan list error di atas tabel seperti sebelumnya, bisa dikembalikan. 
            Namun untuk menyamakan struktur Barang, biasanya error form muncul di dalam modal. --}}
 
-            <div class="table-responsive text-nowrap">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Kode</th>
-                            <th>Nama</th>
-                            <th>Lokasi</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-border-bottom-0">
-                        @foreach ($gudangs as $gudang)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>
-                                    <strong>{{ $gudang->kode_gudang }}</strong>
-                                </td>
-                                <td>{{ $gudang->nama_gudang }}</td>
-                                <td>{{ $gudang->lokasi }}</td>
-                                <td>
-                                    <div class="d-flex">
-                                        <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
-                                            onclick="editGudang(
-                                                  '{{ route('gudang.update', $gudang->kode_gudang) }}', 
-                                                  '{{ $gudang->kode_gudang }}', 
-                                                  '{{ $gudang->nama_gudang }}', 
-                                                  '{{ $gudang->lokasi }}'
-                                                )">
-                                            <i class="ri-pencil-line me-1"></i>
-                                            Edit
-                                        </a>
-                                        <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
-                                            onclick="konfirmasiHapus('{{ route('gudang.destroy', $gudang->kode_gudang) }}')">
-                                            <i class="ri-delete-bin-6-line me-1"></i>
-                                            Delete
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
+            <div class="row g-4">
+                @foreach ($gudangs as $gudang)
+                    <div class="col-md-6 col-lg-4">
+                        <div class="border bg-white rounded p-4 h-100 d-flex flex-column">
+                            @if($gudang->images)
+                                <div class="mb-3">
+                                    <img src="{{ asset('storage/' . $gudang->images) }}" alt="{{ $gudang->nama_gudang }}"
+                                        class="img-fluid rounded mb-3" style="width:100%; height:160px; object-fit:cover;">
+                                </div>
+                            @endif
 
-                        @if ($gudangs->isEmpty())
-                            <tr>
-                                <td colspan="5" class="text-center">Belum ada data gudang.</td>
-                            </tr>
-                        @endif
-                    </tbody>
-                </table>
+                            <div class="mb-3">
+                                <h5 class="mb-0">{{ $gudang->nama_gudang }}</h5>
+                                <small class="text-muted">{{ $gudang->lokasi }}</small>
+                            </div>
+
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Kode: <strong>{{ $gudang->kode_gudang }}</strong></span>
+                                <div class="d-flex">
+                                    <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
+                                        data-route="{{ route('gudang.update', $gudang->kode_gudang) }}"
+                                        data-kode="{{ $gudang->kode_gudang }}"
+                                        data-nama="{{ $gudang->nama_gudang }}"
+                                        data-lokasi="{{ $gudang->lokasi }}"
+                                        data-image="{{ $gudang->images ? asset('storage/' . $gudang->images) : '' }}"
+                                        onclick="openEditFromData(this)">
+                                        <i class="ri-pencil-line me-1"></i>Edit
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
+                                        onclick="konfirmasiHapus('{{ route('gudang.destroy', $gudang->kode_gudang) }}')">
+                                        <i class="ri-delete-bin-6-line me-1"></i>Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+                @if ($gudangs->isEmpty())
+                    <div class="col-12 text-center text-muted">Belum ada data gudang.</div>
+                @endif
             </div>
         </div>
     </div>
@@ -106,18 +98,54 @@
             myModal.show();
         }
 
-        function editGudang(actionUrl, kode, nama, lokasi) {
+        function openEditFromData(elem) {
+            editGudang(elem.dataset.route, elem.dataset.kode, elem.dataset.nama, elem.dataset.lokasi, elem.dataset.image || null);
+        }
+
+        function editGudang(actionUrl, kode, nama, lokasi, imageUrl) {
             // 1. Isi value input form dengan data yang dikirim dari tombol
             document.getElementById('edit_kode_gudang').value = kode;
             document.getElementById('edit_nama_gudang').value = nama;
             document.getElementById('edit_lokasi').value = lokasi;
 
+            // 1b. Set preview gambar jika ada
+            var preview = document.getElementById('edit_image_preview');
+            if (imageUrl) {
+                preview.src = imageUrl;
+                preview.style.display = 'block';
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+
             // 2. Ubah action form agar mengarah ke URL update yang benar
             document.getElementById('formEditGudang').action = actionUrl;
+            // reset file input
+            var editFileInput = document.getElementById('edit_images');
+            if (editFileInput) editFileInput.value = '';
 
             // 3. Tampilkan modal
             var myModal = new bootstrap.Modal(document.getElementById('modalEditGudang'));
             myModal.show();
+        }
+
+        function previewCreateImage(input) {
+            var preview = document.getElementById('create_image_preview');
+            if (input.files && input.files[0]) {
+                preview.src = URL.createObjectURL(input.files[0]);
+                preview.style.display = 'block';
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+        }
+
+        function previewEditImage(input) {
+            var preview = document.getElementById('edit_image_preview');
+            if (input.files && input.files[0]) {
+                preview.src = URL.createObjectURL(input.files[0]);
+                preview.style.display = 'block';
+            }
         }
     </script>
 @endsection
