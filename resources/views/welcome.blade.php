@@ -59,7 +59,7 @@
                     <div class="d-inline-flex align-items-center">
                         <i class="fa fa-users fa-2x text-primary"></i>
                         <div class="ms-4">
-                            <a href="{{ url('/login') }}">
+                            <a href="{{ url('/user') }}">
                                 <h6 class="text-uppercase mb-2">User</h6>
                             </a>
 
@@ -255,9 +255,6 @@
                                             <del class="me-2 fs-5">$1,250.00</del>
                                             <span class="text-primary fs-5">$1,050.00</span>
                                         </div>
-                                    </div>
-                                    <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-
                                     </div>
                                 </div>
                             </div>

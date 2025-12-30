@@ -7,6 +7,9 @@
         </div>
         <form action="{{ route('barang-store') }}" method="POST">
           @csrf
+          @if(isset($gudangKode) && $gudangKode)
+            <input type="hidden" name="gudang" value="{{ $gudangKode }}">
+          @endif
           <div class="modal-body">
             <div class="row g-3">
               <div class="col-md-6">
@@ -49,6 +52,14 @@
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
               </div>
+
+              {{-- Optional initial stock when creating directly from a gudang view --}}
+              @if(isset($gudangKode) && $gudangKode)
+                <div class="col-md-6">
+                  <label class="form-label">Stok Awal</label>
+                  <input type="number" name="initial_stock" min="0" value="{{ old('initial_stock', 0) }}" class="form-control">
+                </div>
+              @endif
             </div>
           </div>
           <div class="modal-footer">

@@ -33,8 +33,10 @@
             <div class="col mb-3">
               <label for="role" class="form-label">Hak Akses</label>
               <select id="role" name="role" class="form-select">
-                <option value="user">Pengguna</option>
-                <option value="admin">Admin</option>
+                <option value="user">User</option>
+                <option value="petugas">Petugas</option>
+                <option value="approval">Approval</option>
+                <option value="atasan">Atasan</option>
               </select>
             </div>
           </div>

@@ -107,7 +107,7 @@
                                 <a href="404.html" class="dropdown-item">Jakarta</a>
                             </div>
                         </div>
-                        <a href="single.html" class="nav-item nav-link">Keranjang</a>
+                        <a href="{{ url('/cart') }}" class="nav-item nav-link">Keranjang</a>
                     </div>
                     <div class="dropdown">
                         <a href="#" class="btn btn-primary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"

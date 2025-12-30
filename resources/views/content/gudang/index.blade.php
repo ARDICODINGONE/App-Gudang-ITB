@@ -43,22 +43,28 @@
 
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <span class="text-muted">Kode: <strong>{{ $gudang->kode_gudang }}</strong></span>
-                                <div class="d-flex">
-                                    <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
-                                        data-route="{{ route('gudang.update', $gudang->kode_gudang) }}"
-                                        data-kode="{{ $gudang->kode_gudang }}"
-                                        data-nama="{{ $gudang->nama_gudang }}"
-                                        data-lokasi="{{ $gudang->lokasi }}"
-                                        data-image="{{ $gudang->images ? asset('storage/' . $gudang->images) : '' }}"
-                                        onclick="openEditFromData(this)">
-                                        <i class="ri-pencil-line me-1"></i>Edit
-                                    </a>
-                                    <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
-                                        onclick="konfirmasiHapus('{{ route('gudang.destroy', $gudang->kode_gudang) }}')">
-                                        <i class="ri-delete-bin-6-line me-1"></i>Delete
-                                    </a>
-                                </div>
+                                @auth
+                                    @if(auth()->user() && auth()->user()->role === 'atasan')
+                                        <div class="d-flex">
+                                            <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
+                                                data-route="{{ route('gudang.update', $gudang->kode_gudang) }}"
+                                                data-kode="{{ $gudang->kode_gudang }}"
+                                                data-nama="{{ $gudang->nama_gudang }}"
+                                                data-lokasi="{{ $gudang->lokasi }}"
+                                                data-image="{{ $gudang->images ? asset('storage/' . $gudang->images) : '' }}"
+                                                onclick="openEditFromData(this)">
+                                                <i class="ri-pencil-line me-1"></i>Edit
+                                            </a>
+                                            <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
+                                                onclick="konfirmasiHapus('{{ route('gudang.destroy', $gudang->kode_gudang) }}')">
+                                                <i class="ri-delete-bin-6-line me-1"></i>Delete
+                                            </a>
+                                        </div>
+                                    @endif
+                                @endauth
                             </div>
+                            <button type="button" class="btn-modern px-4 w-100 d-block mx-auto"
+                                onclick="window.location.href='{{ route('barang-index', ['gudang' => $gudang->kode_gudang]) }}'">Masuk</button>
                         </div>
                     </div>
                 @endforeach

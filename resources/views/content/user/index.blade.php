@@ -44,25 +44,24 @@
                 </span>
               </td>
                 <td>
-                    <div class="d-flex">
-                      <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
-                          onclick="editUser(
-                                '{{ route('user.update', $user->id) }}',
-                                '{{ $user->nama }}',
-                                '{{ $user->username }}',
-                                '{{ $user->password }}',
-                                '{{ $user->role }}'
-                            )">
-                            <i class="ri-pencil-line me-1"></i>
-                          Edit
-                      </a>
+                  <div class="d-flex">
+                    <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
+                        onclick="editUser(
+                          '{{ route('user.update', $user->id) }}',
+                          '{{ $user->nama }}',
+                          '{{ $user->username }}',
+                          '{{ $user->password }}',
+                          '{{ $user->role }}'
+                          )">
+                        <i class="ri-pencil-line me-1"></i>
+                      Edit
+                    </a>
 
-                      <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
-                          onclick="konfirmasiHapus('{{ route('user.destroy', $user->id) }}')">
-                          <i class="ri-delete-bin-6-line me-1"></i>
-                          Delete
-                      </a>
-                    </div>
+                    <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
+                        onclick="konfirmasiHapus('{{ route('user.destroy', $user->id) }}')">
+                        <i class="ri-delete-bin-6-line me-1"></i>
+                      Delete
+                    </a>
                   </div>
                 </td>
               </tr>

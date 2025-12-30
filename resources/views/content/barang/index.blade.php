@@ -24,6 +24,7 @@
             <tr>
               <th>Kode</th>
               <th>Nama</th>
+              <th>Stok</th>
               <th>Kategori</th>
               <th>Satuan</th>
               <th>Aksi</th>
@@ -34,33 +35,35 @@
               <tr>
                 <td>{{ $item->kode_barang }}</td>
                 <td>{{ $item->nama_barang }}</td>
+                <td>{{ isset($item->stok) && $item->stok->first() ? $item->stok->first()->stok : '-' }}</td>
                 <td>{{ $item->kategori ? $item->kategori->kategori : '-' }}</td>
                 <td>{{ $item->satuan }}</td>
                 <td>
-                  <div class="dropdown">
-                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow shadow-none"
-                      data-bs-toggle="dropdown">
-                      <i class="icon-base ri ri-more-2-line icon-18px"></i>
-                    </button>
-                    <div class="dropdown-menu">
-                      <a class="dropdown-item" href="javascript:void(0);"
-                        onclick="editBarang('{{ $item->kode_barang }}')">
-                        <i class="icon-base ri ri-pencil-line icon-18px me-1"></i>
-                        Edit
-                      </a>
-                      <a class="dropdown-item" href="javascript:void(0);"
-                        onclick="konfirmasiHapus('{{ route('barang.destroy', $item->kode_barang) }}')">
-                        <i class="icon-base ri ri-delete-bin-6-line icon-18px me-1"></i>
-                        Delete
-                      </a>
-                    </div>
+                  <div class="d-flex">
+                    <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
+                      onclick="editBarang(
+                          '{{ route('barang.update', $item->kode_barang) }}',
+                          '{{ $item->kode_barang }}',
+                          '{{ $item->nama_barang }}',
+                          '{{ $item->kategori ? $item->kategori->id : '' }}',
+                          '{{ $item->satuan }}'
+                        )">
+                        <i class="ri-pencil-line me-1"></i>
+                      Edit
+                    </a>
+
+                    <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
+                      onclick="konfirmasiHapus('{{ route('barang.destroy', $item->kode_barang) }}')">
+                      <i class="ri-delete-bin-6-line me-1"></i>
+                    Delete
+                    </a>
                   </div>
                 </td>
               </tr>
             @endforeach
             @if ($barangs->isEmpty())
               <tr>
-                <td colspan="5" class="text-center">Belum ada data barang.</td>
+                <td colspan="6" class="text-center">Belum ada data barang.</td>
               </tr>
             @endif
           </tbody>

@@ -31,8 +31,10 @@
             <div class="col mb-3">
               <label class="form-label">Hak Akses</label>
               <select id="edit_role" name="role" class="form-select">
-                <option value="user">Pengguna</option>
-                <option value="admin">Admin</option>
+                <option value="user">User</option>
+                <option value="petugas">Petugas</option>
+                <option value="approval">Approval</option>
+                <option value="atasan">Atasan</option>
               </select>
             </div>
           </div>

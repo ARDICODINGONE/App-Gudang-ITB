@@ -18,25 +18,37 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+        // Use updateOrCreate so seeder is idempotent (won't fail on duplicate unique keys)
+        User::updateOrCreate([
+            'username' => 'test@example.com'
+        ], [
             'nama' => 'Test User',
-            'username' => 'test@example.com',
             'role' => 'user',
+            'password' => Hash::make('password')
         ]);
 
-        User::create([
-            'nama' => 'Admin',
-            'username' => 'admin',
-            'password' => Hash::make('admin123'),
-            'role' => 'admin'
-        ]);
-
-
-        User::create([
+        User::updateOrCreate([
+            'username' => 'petugas'
+        ], [
             'nama' => 'Petugas',
-            'username' => 'user',
+            'password' => Hash::make('petugas123'),
+            'role' => 'petugas'
+        ]);
+
+        User::updateOrCreate([
+            'username' => 'user'
+        ], [
+            'nama' => 'pengguna',
             'password' => Hash::make('user123'),
             'role' => 'user'
+        ]);
+
+        User::updateOrCreate([
+            'username' => 'admin'
+        ], [
+            'nama' => 'Atasan',
+            'password' => Hash::make('admin123'),
+            'role' => 'atasan'
         ]);
     }
 }

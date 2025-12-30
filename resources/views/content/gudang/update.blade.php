@@ -29,7 +29,7 @@
           </div>
           <div class="row">
             <div class="col mb-3">
-              <label class="form-label">Gambar (opsional)</label>
+              <label class="form-label">Gambar</label>
               <input type="file" id="edit_images" name="images" class="form-control" accept="image/*" onchange="previewEditImage(this)">
               <div class="mt-2">
                 <img id="edit_image_preview" src="" alt="Preview" style="max-height:120px; display:none; object-fit:cover;" class="rounded">

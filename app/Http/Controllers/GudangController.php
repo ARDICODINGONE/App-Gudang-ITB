@@ -11,7 +11,24 @@ class GudangController extends Controller
     public function index()
     {
         $gudangs = Gudang::orderBy('kode_gudang')->get();
-        return view('content.gudang.index', compact('gudangs')); // 'gudangs' bukan 'gudang'
+
+        $last = Gudang::orderBy('kode_gudang', 'desc')->first();
+        if (!$last) {
+            $nextKode = 'GD-001';
+        } else {
+            $parts = explode('-', $last->kode_gudang);
+            $num = 0;
+            if (count($parts) > 1 && is_numeric(end($parts))) {
+                $num = intval(end($parts));
+            } else {
+                preg_match('/(\d+)$/', $last->kode_gudang, $matches);
+                $num = isset($matches[1]) ? intval($matches[1]) : 0;
+            }
+            $num++;
+            $nextKode = sprintf('%s-%03d', $parts[0] ?? 'GD', $num);
+        }
+
+        return view('content.gudang.index', compact('gudangs', 'nextKode')); // 'gudangs' bukan 'gudang'
     }
 
     public function store(Request $request)

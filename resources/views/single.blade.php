@@ -4,534 +4,628 @@
 
 @section('content')
     <!-- Single Page Header start -->
-    <div class="container-fluid page-header py-5">
-        <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Single Product</h1>
-        <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
-            <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
-            <li class="breadcrumb-item"><a href="#">Pages</a></li>
-            <li class="breadcrumb-item active text-white">Single Product</li>
-        </ol>
+    <div class="container-fluid page-header py-5 mb-4 bg-primary">
+        <h1 class="text-center text-white display-6">Shop</h1>
     </div>
     <!-- Single Page Header End -->
 
     <!-- Single Products Start -->
-    <div class="container-fluid shop py-5" style="overflow-x: hidden;">
-        <div class="container py-5">
+    <div class="container-fluid shop py-5">
+        <div class="container">
             <div class="row g-4">
-                <!-- Sidebar -->
-                <div class="col-lg-5 col-xl-3 wow fadeInUp" data-wow-delay="0.1s">
-                    <!-- Search -->
-                    <div class="input-group w-100 mx-auto d-flex mb-4">
-                        <input type="search" class="form-control p-3" placeholder="keywords"
-                            aria-describedby="search-icon-1">
-                        <span id="search-icon-1" class="input-group-text p-3"><i class="fa fa-search"></i></span>
+                <!-- Product Details Card (Left Side) -->
+                <div class="col-lg-8 wow fadeInUp" data-wow-delay="0.1s">
+                    <!-- Letakkan di atas card produk, tepat sebelum <div class="card border-0 shadow-sm"> -->
+                    <div class="mb-3">
+                        <button onclick="history.back()" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                            <i class="fa fa-arrow-left me-2"></i> Kembali
+                        </button>
                     </div>
-
-                    <!-- Product Categories -->
-                    <div class="product-categories mb-4">
-                        <h4>Products Categories</h4>
-                        <ul class="list-unstyled">
-                            @foreach(['Accessories' => 3, 'Electronics & Computer' => 5, 'Laptops & Desktops' => 2, 'Mobiles & Tablets' => 8, 'SmartPhone & Smart TV' => 5] as $category => $count)
-                            <li>
-                                <div class="categories-item">
-                                    <a href="#" class="text-dark"><i class="fas fa-apple-alt text-secondary me-2"></i>
-                                        {{ $category }}</a>
-                                    <span>({{ $count }})</span>
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="row g-4">
+                                <!-- Product Images -->
+                                <div class="col-md-6">
+                                    <div class="single-carousel owl-carousel">
+                                        @if (isset($product->images) && count($product->images) > 0)
+                                            @foreach ($product->images as $image)
+                                                <div class="single-item"
+                                                    data-dot="<img class='img-fluid' src='{{ asset('storage/' . $image) }}' alt='{{ $product->name }}'>">
+                                                    <div class="single-inner bg-light rounded">
+                                                        <img src="{{ asset('storage/' . $image) }}"
+                                                            class="img-fluid rounded" alt="{{ $product->name }}"
+                                                            style="height: 350px; object-fit: contain; width: 100%;">
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            <!-- Fallback image if no product images -->
+                                            <div class="single-item"
+                                                data-dot="<img class='img-fluid' src='{{ asset('img/product-4.png') }}' alt='{{ $product->name ?? 'Product' }}'>">
+                                                <div class="single-inner bg-light rounded">
+                                                    <img src="{{ asset('img/product-4.png') }}" class="img-fluid rounded"
+                                                        alt="{{ $product->name ?? 'Product' }}"
+                                                        style="height: 350px; object-fit: contain; width: 100%;">
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
 
-                    <!-- Color Selection -->
-                    <div class="additional-product mb-4">
-                        <h4>Select By Color</h4>
-                        @foreach(['Gold', 'Green', 'White'] as $index => $color)
-                        <div class="additional-product-item">
-                            <input type="radio" class="me-2" id="color-{{ $index }}" name="color" value="{{ $color }}">
-                            <label for="color-{{ $index }}" class="text-dark">{{ $color }}</label>
-                        </div>
-                        @endforeach
-                    </div>
+                                <!-- Product Details -->
+                                <div class="col-md-6">
+                                    <h4 class="fw-bold mb-3">{{ $product->name ?? 'Smart Camera' }}</h4>
+                                    <p class="mb-3 text-muted">
+                                        Category:
+                                        @if (isset($product->category))
+                                            <a href="{{ route('category.show', $product->category->slug) }}"
+                                                class="text-decoration-none">
+                                                {{ $product->category->name }}
+                                            </a>
+                                        @else
+                                            Electronics
+                                        @endif
+                                    </p>
 
-                    <!-- Featured Products -->
-                    <div class="featured-product mb-4">
-                        <h4 class="mb-3">Featured products</h4>
-                        @foreach([
-                            ['img' => 'product-3.png', 'name' => 'SmartPhone'],
-                            ['img' => 'product-4.png', 'name' => 'Smart Camera'],
-                            ['img' => 'product-5.png', 'name' => 'Smart Camera'],
-                            ['img' => 'product-6.png', 'name' => 'Smart Camera'],
-                            ['img' => 'product-7.png', 'name' => 'Camera Lens'],
-                            ['img' => 'product-8.png', 'name' => 'Smart Camera']
-                        ] as $index => $product)
-                        <div class="featured-product-item mb-3">
-                            <div class="rounded me-4" style="width: 100px; height: 100px;">
-                                <img src="{{ asset('img/' . $product['img']) }}" class="img-fluid rounded" alt="{{ $product['name'] }}" style="height: 100px; object-fit: cover;">
-                            </div>
-                            <div>
-                                <h6 class="mb-2">{{ $product['name'] }}</h6>
-                                <div class="d-flex mb-2">
-                                    @for($i = 0; $i < 4; $i++)
-                                    <i class="fa fa-star text-secondary"></i>
-                                    @endfor
-                                    <i class="fa fa-star"></i>
+                                    <!-- Price Display -->
+                                    <h5 class="fw-bold mb-3">
+                                        @if (isset($product->discount_price) && $product->discount_price > 0)
+                                            <span
+                                                class="text-danger">${{ number_format($product->discount_price, 2) }}</span>
+                                            <small
+                                                class="text-muted text-decoration-line-through ms-2">${{ number_format($product->price, 2) }}</small>
+                                            <span
+                                                class="badge bg-danger ms-2">-{{ number_format((($product->price - $product->discount_price) / $product->price) * 100, 0) }}%</span>
+                                        @else
+                                            ${{ number_format($product->price ?? 3.35, 2) }}
+                                        @endif
+                                    </h5>
+
+                                    <!-- Stock Status -->
+                                    <div class="d-flex flex-column mb-3">
+                                        @if (isset($product->stock) && $product->stock > 0)
+                                            @if ($product->stock <= 10)
+                                                <small class="text-warning">Hurry! Only
+                                                    <strong>{{ $product->stock }}</strong> items left in stock</small>
+                                            @else
+                                                <small>Available: <span class="text-success">{{ $product->stock }} items in
+                                                        stock</span></small>
+                                            @endif
+                                        @else
+                                            <small class="text-danger">Out of Stock</small>
+                                        @endif
+                                    </div>
+
+                                    <!-- Product Description -->
+                                    <p class="mb-4">
+                                        {{ $product->short_description ?? 'The generated Lorem Ipsum is therefore always free from repetition injected humour, or non-characteristic words etc.' }}
+                                    </p>
+
+                                    <!-- Additional Details -->
+                                    @if (isset($product->features) && count($product->features) > 0)
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold mb-2">Key Features:</h6>
+                                            <ul class="list-unstyled small">
+                                                @foreach ($product->features as $feature)
+                                                    <li><i class="fa fa-check text-success me-2"></i>{{ $feature }}
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+
+                                    <!-- Quantity Selector -->
+                                    <div class="input-group quantity mb-4" style="width: 120px;">
+                                        <div class="input-group-btn">
+                                            <button class="btn btn-sm btn-minus rounded-0 bg-light border">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                        </div>
+                                        <input type="text"
+                                            class="form-control form-control-sm text-center border border-start-0 border-end-0"
+                                            value="1" id="quantity" name="quantity" min="1"
+                                            max="{{ $product->stock ?? 20 }}">
+                                        <div class="input-group-btn">
+                                            <button class="btn btn-sm btn-plus rounded-0 bg-light border">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="d-flex gap-2 mb-4">
+                                        @if (isset($product->stock) && $product->stock > 0)
+                                            <button type="button"
+                                                class="btn btn-outline-primary btn-sm rounded-0 px-4 py-2 add-to-cart"
+                                                data-product-id="{{ $product->id ?? 1 }}"
+                                                data-product-name="{{ $product->name ?? 'Smart Camera' }}"
+                                                data-product-price="{{ $product->discount_price ?? ($product->price ?? 3.35) }}">
+                                                <i class="fa fa-shopping-cart me-2"></i> Add to cart
+                                            </button>
+                                            <button type="button"
+                                                class="btn btn-outline-secondary btn-sm rounded-0 px-3 py-2">
+                                                <i class="fa fa-heart"></i>
+                                            </button>
+                                        @else
+                                            <button type="button"
+                                                class="btn btn-outline-secondary btn-sm rounded-0 px-4 py-2" disabled>
+                                                <i class="fa fa-shopping-cart me-2"></i> Out of Stock
+                                            </button>
+                                        @endif
+                                    </div>
+
+                                    <!-- Product Meta -->
+                                    <div class="border-top pt-3">
+                                        <div class="row small">
+                                            @if (isset($product->sku))
+                                                <div class="col-6">
+                                                    <span class="text-muted">SKU:</span>
+                                                    <strong>{{ $product->sku }}</strong>
+                                                </div>
+                                            @endif
+                                            @if (isset($product->brand))
+                                                <div class="col-6">
+                                                    <span class="text-muted">Brand:</span>
+                                                    <strong>{{ $product->brand }}</strong>
+                                                </div>
+                                            @endif
+                                            @if (isset($product->weight))
+                                                <div class="col-6 mt-2">
+                                                    <span class="text-muted">Weight:</span> <strong>{{ $product->weight }}
+                                                        kg</strong>
+                                                </div>
+                                            @endif
+                                            @if (isset($product->dimensions))
+                                                <div class="col-6 mt-2">
+                                                    <span class="text-muted">Dimensions:</span>
+                                                    <strong>{{ $product->dimensions }}</strong>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="d-flex mb-2">
-                                    <h5 class="fw-bold me-2">2.99 $</h5>
-                                    <h5 class="text-danger text-decoration-line-through">4.11 $</h5>
+
+                                <!-- Description Section -->
+                                <div class="col-12 mt-4">
+                                    <nav>
+                                        <div class="nav nav-tabs border-bottom mb-3">
+                                            <button class="nav-link active border-0 text-dark bg-transparent" type="button"
+                                                role="tab" id="nav-description-tab" data-bs-toggle="tab"
+                                                data-bs-target="#nav-description" aria-controls="nav-description"
+                                                aria-selected="true">Description</button>
+
+                                            @if (isset($product->specifications) && count($product->specifications) > 0)
+                                                <button class="nav-link border-0 text-dark bg-transparent" type="button"
+                                                    role="tab" id="nav-specs-tab" data-bs-toggle="tab"
+                                                    data-bs-target="#nav-specs" aria-controls="nav-specs"
+                                                    aria-selected="false">Specifications</button>
+                                            @endif
+
+                                            @if (isset($product->reviews) && count($product->reviews) > 0)
+                                                <button class="nav-link border-0 text-dark bg-transparent" type="button"
+                                                    role="tab" id="nav-reviews-tab" data-bs-toggle="tab"
+                                                    data-bs-target="#nav-reviews" aria-controls="nav-reviews"
+                                                    aria-selected="false">
+                                                    Reviews <span
+                                                        class="badge bg-secondary ms-1">{{ count($product->reviews) }}</span>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </nav>
+
+                                    <div class="tab-content">
+                                        <!-- Description Tab -->
+                                        <div class="tab-pane fade show active" id="nav-description" role="tabpanel"
+                                            aria-labelledby="nav-description-tab">
+                                            {!! $product->description ??
+                                                '<p>Our new <b class="fw-bold">HPB12 / A12 battery</b> is rated at 2000mAh and designed to power up Black and Decker / FireStorm line of 12V tools allowing users to run multiple devices off the same battery pack.</p>' !!}
+                                        </div>
+
+                                        <!-- Specifications Tab -->
+                                        @if (isset($product->specifications) && count($product->specifications) > 0)
+                                            <div class="tab-pane fade" id="nav-specs" role="tabpanel"
+                                                aria-labelledby="nav-specs-tab">
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm">
+                                                        <tbody>
+                                                            @foreach ($product->specifications as $key => $value)
+                                                                <tr>
+                                                                    <th class="text-muted" style="width: 200px;">
+                                                                        {{ $key }}</th>
+                                                                    <td>{{ $value }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <!-- Reviews Tab -->
+                                        @if (isset($product->reviews) && count($product->reviews) > 0)
+                                            <div class="tab-pane fade" id="nav-reviews" role="tabpanel"
+                                                aria-labelledby="nav-reviews-tab">
+                                                @foreach ($product->reviews as $review)
+                                                    <div class="border-bottom pb-3 mb-3">
+                                                        <div class="d-flex justify-content-between mb-2">
+                                                            <strong>{{ $review->user_name }}</strong>
+                                                            <small
+                                                                class="text-muted">{{ $review->created_at->format('M d, Y') }}</small>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            @for ($i = 1; $i <= 5; $i++)
+                                                                <i
+                                                                    class="fa fa-star{{ $i <= $review->rating ? ' text-warning' : ' text-muted' }}"></i>
+                                                            @endfor
+                                                        </div>
+                                                        <p class="mb-0">{{ $review->comment }}</p>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        @endforeach
-                        <div class="d-flex justify-content-center my-4">
-                            <a href="#" class="btn btn-primary px-4 py-3 rounded-pill w-100">View More</a>
-                        </div>
-                    </div>
-
-                    <!-- Sale Banner -->
-                    <a href="#">
-                        <div class="position-relative">
-                            <img src="{{ asset('img/product-banner-2.jpg') }}" class="img-fluid w-100 rounded" alt="Sale Banner" style="height: 250px; object-fit: cover;">
-                            <div class="text-center position-absolute d-flex flex-column align-items-center justify-content-center rounded p-4"
-                                style="width: 100%; height: 100%; top: 0; right: 0; background: rgba(242, 139, 0, 0.3);">
-                                <h5 class="display-6 text-primary">SALE</h5>
-                                <h4 class="text-secondary">Get UP To 50% Off</h4>
-                                <a href="#" class="btn btn-primary rounded-pill px-4">Shop Now</a>
-                            </div>
-                        </div>
-                    </a>
-
-                    <!-- Product Tags -->
-                    <div class="product-tags my-4">
-                        <h4 class="mb-3">PRODUCT TAGS</h4>
-                        <div class="product-tags-items bg-light rounded p-3">
-                            @foreach(['New', 'brand', 'black', 'white', 'tablets', 'phone', 'camera', 'drone', 'television', 'sales'] as $tag)
-                            <a href="#" class="border rounded py-1 px-2 mb-2">{{ $tag }}</a>
-                            @endforeach
                         </div>
                     </div>
                 </div>
 
-                <!-- Main Product Content -->
-                <div class="col-lg-7 col-xl-9 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="row g-4 single-product">
-                        <!-- Product Images -->
-                        <div class="col-xl-6">
-                            <div class="single-carousel owl-carousel">
-                                @foreach(['product-4.png', 'product-5.png', 'product-6.png', 'product-7.png', 'product-3.png'] as $img)
-                                <div class="single-item"
-                                    data-dot="<img class='img-fluid' src='{{ asset('img/' . $img) }}' alt=''>">
-                                    <div class="single-inner bg-light rounded">
-                                        <img src="{{ asset('img/' . $img) }}" class="img-fluid rounded" alt="Product Image" style="height: 400px; object-fit: contain; width: 100%;">
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
+                <!-- Recommended Products (Right Side) -->
+                <div class="col-lg-4 wow fadeInUp" data-wow-delay="0.3s">
+                    <!-- Recommended Products Card -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-transparent border-0 py-3">
+                            <h5 class="fw-bold mb-0">Recommended Products</h5>
                         </div>
-
-                        <!-- Product Details -->
-                        <div class="col-xl-6">
-                            <h4 class="fw-bold mb-3">Smart Camera</h4>
-                            <p class="mb-3">Category: Electronics</p>
-                            <h5 class="fw-bold mb-3">3,35 $</h5>
-                            <div class="d-flex mb-4">
-                                @for($i = 0; $i < 4; $i++)
-                                <i class="fa fa-star text-secondary"></i>
-                                @endfor
-                                <i class="fa fa-star"></i>
-                            </div>
-                            <div class="mb-3">
-                                <div class="btn btn-primary d-inline-block rounded text-white py-1 px-4 me-2">
-                                    <i class="fab fa-facebook-f me-1"></i> Share
-                                </div>
-                                <div class="btn btn-secondary d-inline-block rounded text-white py-1 px-4 ms-2">
-                                    <i class="fab fa-twitter ms-1"></i> Share
-                                </div>
-                            </div>
-                            <div class="d-flex flex-column mb-3">
-                                <small>Product SKU: N/A</small>
-                                <small>Available: <strong class="text-primary">20 items in stock</strong></small>
-                            </div>
-                            <p class="mb-4">The generated Lorem Ipsum is therefore always free from repetition injected
-                                humour, or non-characteristic words etc.</p>
-                            <p class="mb-4">Susp endisse ultricies nisi vel quam suscipit. Sabertooth peacock flounder;
-                                chain pickerel hatchetfish, pencilfish snailfish</p>
-                            
-                            <!-- Quantity Selector -->
-                            <div class="input-group quantity mb-5" style="width: 100px;">
-                                <div class="input-group-btn">
-                                    <button class="btn btn-sm btn-minus rounded-circle bg-light border">
-                                        <i class="fa fa-minus"></i>
-                                    </button>
-                                </div>
-                                <input type="text" class="form-control form-control-sm text-center border-0" value="1">
-                                <div class="input-group-btn">
-                                    <button class="btn btn-sm btn-plus rounded-circle bg-light border">
-                                        <i class="fa fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <a href="#"
-                                class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4">
-                                <i class="fa fa-shopping-bag me-2 text-white"></i> Add to cart
-                            </a>
-                        </div>
-
-                        <!-- Tabs Section -->
-                        <div class="col-lg-12">
-                            <nav>
-                                <div class="nav nav-tabs mb-3">
-                                    <button class="nav-link active border-white border-bottom-0" type="button"
-                                        role="tab" id="nav-about-tab" data-bs-toggle="tab" data-bs-target="#nav-about"
-                                        aria-controls="nav-about" aria-selected="true">Description</button>
-                                    <button class="nav-link border-white border-bottom-0" type="button" role="tab"
-                                        id="nav-mission-tab" data-bs-toggle="tab" data-bs-target="#nav-mission"
-                                        aria-controls="nav-mission" aria-selected="false">Reviews</button>
-                                </div>
-                            </nav>
-                            
-                            <div class="tab-content mb-5">
-                                <!-- Description Tab -->
-                                <div class="tab-pane active" id="nav-about" role="tabpanel"
-                                    aria-labelledby="nav-about-tab">
-                                    <p>Our new <b class="fw-bold">HPB12 / A12 battery</b> is rated at 2000mAh and
-                                        designed to power up Black and Decker / FireStorm line of 12V tools allowing
-                                        users to run multiple devices off the same battery pack. The HPB12 is compatible
-                                        with the following Black and Decker power tool models:
-                                    </p>
-                                    @foreach([
-                                        'Black & Decker Drills and Drivers' => 'BD12PSK, BDG1200K, BDGL12K, BDID1202, CD1200SK, CD12SFK, CDC1200K, CDC120AK, CDC120ASB, CP122K, CP122KB, CP12K, CP12KB, EPC12, EPC126, EPC126BK, EPC12CA, EPC12CABK, HP122K, HP122KD, HP126F2B, HP126F2K, HP126F3B, HP126F3K, HP126FBH, HP126FSC, HP126FSH, HP126K, HP128F3B, HP12K, HP12KD, HPD1200, HPD1202, HPD1202KF, HPD12K-2, PS122K, PS122KB, PS12HAK, SS12, SX3000, SX3500, XD1200, XD1200K, XTC121',
-                                        'Black & Decker Impact Wrenches' => 'SX5000, XTC12IK, XTC12IKH',
-                                        'Black & Decker Multi-Tools' => 'KC2000FK',
-                                        'Black & Decker Nailers' => 'BDBN1202',
-                                        'Black & Decker Screwdrivers' => 'HP9019K'
-                                    ] as $title => $models)
-                                    <b class="fw-bold">{{ $title }}:</b>
-                                    <p class="small">{{ $models }}</p>
-                                    @endforeach
-                                    <b class="fw-bold mb-0">Best replacement for the following Black and Decker OEM
-                                        battery part numbers:</b>
-                                    <p class="small">HPB12, A12, A12EX, A12-XJ, A1712, B-8315, BD1204L, BD-1204L,
-                                        BPT1047, FS120B, FS120BX, FSB12.</p>
-                                </div>
-
-                                <!-- Reviews Tab -->
-                                <div class="tab-pane" id="nav-mission" role="tabpanel"
-                                    aria-labelledby="nav-mission-tab">
-                                    @foreach([
-                                        ['name' => 'Jason Smith', 'date' => 'April 12, 2024', 'stars' => 4],
-                                        ['name' => 'Sam Peters', 'date' => 'April 12, 2024', 'stars' => 3]
-                                    ] as $review)
-                                    <div class="d-flex mb-4">
-                                        <img src="{{ asset('img/avatar.jpg') }}" class="img-fluid rounded-circle p-3"
-                                            style="width: 100px; height: 100px; object-fit: cover;" alt="Avatar">
-                                        <div class="ms-3">
-                                            <p class="mb-2" style="font-size: 14px;">{{ $review['date'] }}</p>
-                                            <div class="d-flex justify-content-between">
-                                                <h5>{{ $review['name'] }}</h5>
-                                                <div class="d-flex mb-3">
-                                                    @for($i = 0; $i < 5; $i++)
-                                                    <i class="fa fa-star {{ $i < $review['stars'] ? 'text-secondary' : '' }}"></i>
-                                                    @endfor
-                                                </div>
-                                            </div>
-                                            <p>The generated Lorem Ipsum is therefore always free from repetition
-                                                injected humour, or non-characteristic
-                                                words etc. Susp endisse ultricies nisi vel quam suscipit</p>
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Review Form -->
-                        <form action="#">
-                            <h4 class="mb-5 fw-bold">Leave a Reply</h4>
-                            <div class="row g-4">
-                                <div class="col-lg-6">
-                                    <div class="border-bottom rounded">
-                                        <input type="text" class="form-control border-0 me-4" placeholder="Your Name *">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="border-bottom rounded">
-                                        <input type="email" class="form-control border-0" placeholder="Your Email *">
-                                    </div>
-                                </div>
-                                <div class="col-lg-12">
-                                    <div class="border-bottom rounded my-4">
-                                        <textarea name="" id="" class="form-control border-0" cols="30" rows="8"
-                                            placeholder="Your Review *" spellcheck="false"></textarea>
-                                    </div>
-                                </div>
-                                <div class="col-lg-12">
-                                    <div class="d-flex justify-content-between py-3 mb-5">
-                                        <div class="d-flex align-items-center">
-                                            <p class="mb-0 me-3">Please rate:</p>
-                                            <div class="d-flex align-items-center" style="font-size: 12px;">
-                                                @for($i = 0; $i < 5; $i++)
-                                                <i class="fa fa-star text-muted"></i>
-                                                @endfor
-                                            </div>
-                                        </div>
-                                        <a href="#"
-                                            class="btn btn-primary border border-secondary text-primary rounded-pill px-4 py-3">
-                                            Post Comment
+                        <div class="card-body p-3">
+                            @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
+                                @foreach ($recommendedProducts as $recommended)
+                                    <div class="d-flex mb-3 pb-3 border-bottom">
+                                        <a href="{{ route('products.show', $recommended->slug) }}" class="flex-shrink-0">
+                                            <img src="{{ $recommended->image ? asset('storage/' . $recommended->image) : asset('img/product-1.png') }}"
+                                                alt="{{ $recommended->name }}" class="rounded"
+                                                style="width: 80px; height: 80px; object-fit: cover;">
                                         </a>
+                                        <div class="flex-grow-1 ms-3">
+                                            <a href="{{ route('products.show', $recommended->slug) }}"
+                                                class="text-decoration-none">
+                                                <h6 class="fw-bold mb-1 text-dark">
+                                                    {{ Str::limit($recommended->name, 40) }}</h6>
+                                            </a>
+                                            <div class="d-flex align-items-center mb-1">
+                                                @if ($recommended->discount_price > 0)
+                                                    <span
+                                                        class="fw-bold text-danger">${{ number_format($recommended->discount_price, 2) }}</span>
+                                                    <small
+                                                        class="text-muted text-decoration-line-through ms-2">${{ number_format($recommended->price, 2) }}</small>
+                                                @else
+                                                    <span
+                                                        class="fw-bold">${{ number_format($recommended->price, 2) }}</span>
+                                                @endif
+                                            </div>
+                                            <div class="small">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <i
+                                                        class="fa fa-star{{ $i <= ($recommended->rating ?? 4) ? ' text-warning' : ' text-muted' }}"></i>
+                                                @endfor
+                                                <span
+                                                    class="text-muted ms-1">({{ $recommended->review_count ?? 12 }})</span>
+                                            </div>
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-primary mt-2 add-to-cart-mini"
+                                                data-product-id="{{ $recommended->id }}"
+                                                data-product-name="{{ $recommended->name }}"
+                                                data-product-price="{{ $recommended->discount_price ?? $recommended->price }}">
+                                                <i class="fa fa-shopping-cart"></i>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </form>
+                                @endforeach
+                            @else
+                                @foreach ([['id' => 2, 'name' => 'Wireless Headphones', 'price' => 89.99, 'discount_price' => 0, 'rating' => 4.5, 'review_count' => 24], ['id' => 3, 'name' => 'Smart Watch Series 5', 'price' => 299.99, 'discount_price' => 0, 'rating' => 4.8, 'review_count' => 42], ['id' => 4, 'name' => 'Bluetooth Speaker', 'price' => 49.99, 'discount_price' => 0, 'rating' => 4.2, 'review_count' => 18], ['id' => 5, 'name' => 'Gaming Keyboard', 'price' => 79.99, 'discount_price' => 0, 'rating' => 4.7, 'review_count' => 31]] as $recommended)
+                                    <div class="d-flex mb-3 pb-3 border-bottom">
+                                        <a href="#" class="flex-shrink-0">
+                                            <img src="{{ asset('img/product-' . $recommended['id'] . '.png') }}"
+                                                alt="{{ $recommended['name'] }}" class="rounded"
+                                                style="width: 80px; height: 80px; object-fit: cover;">
+                                        </a>
+                                        <div class="flex-grow-1 ms-3">
+                                            <a href="#" class="text-decoration-none">
+                                                <h6 class="fw-bold mb-1 text-dark">{{ $recommended['name'] }}</h6>
+                                            </a>
+                                            <div class="d-flex align-items-center mb-1">
+                                                @if ($recommended['discount_price'] > 0)
+                                                    <span
+                                                        class="fw-bold text-danger">${{ number_format($recommended['discount_price'], 2) }}</span>
+                                                    <small
+                                                        class="text-muted text-decoration-line-through ms-2">${{ number_format($recommended['price'], 2) }}</small>
+                                                @else
+                                                    <span
+                                                        class="fw-bold">${{ number_format($recommended['price'], 2) }}</span>
+                                                @endif
+                                            </div>
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-primary mt-2 add-to-cart-mini"
+                                                data-product-id="{{ $recommended['id'] }}"
+                                                data-product-name="{{ $recommended['name'] }}"
+                                                data-product-price="{{ $recommended['price'] }}">
+                                                <i class="fa fa-shopping-cart"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <!-- Single Products End -->
-
-    <!-- Related Product Start -->
-    <div class="container-fluid related-product" style="overflow-x: hidden;">
-        <div class="container">
-            <div class="mx-auto text-center pb-5" style="max-width: 700px;">
-                <h4 class="text-primary mb-4 border-bottom border-primary border-2 d-inline-block p-2 title-border-radius wow fadeInUp"
-                    data-wow-delay="0.1s">Related Products</h4>
-                <p class="wow fadeInUp" data-wow-delay="0.2s">Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                    Modi, asperiores ducimus sint quos tempore officia similique quia? Libero, pariatur consectetur?</p>
-            </div>
-            <div class="related-carousel owl-carousel pt-4">
-                @for($i = 0; $i < 5; $i++)
-                <div class="related-item rounded">
-                    <div class="related-item-inner border rounded">
-                        <div class="related-item-inner-item position-relative">
-                            <img src="{{ asset('img/product-3.png') }}" class="img-fluid w-100" 
-                                style="height: 200px; object-fit: cover;" alt="Related Product">
-                            <div class="related-new position-absolute top-0 end-0 m-2 bg-primary text-white px-2 rounded">New</div>
-                            <div class="related-details position-absolute top-0 start-0 m-2">
-                                <a href="#"><i class="fa fa-eye fa-1x text-white bg-dark bg-opacity-50 rounded-circle p-2"></i></a>
-                            </div>
-                        </div>
-                        <div class="text-center rounded-bottom p-4">
-                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                            <del class="me-2 fs-5">$1,250.00</del>
-                            <span class="text-primary fs-5">$1,050.00</span>
-                        </div>
-                    </div>
-                    <div class="related-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                        <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4">
-                            <i class="fas fa-shopping-cart me-2"></i> Add To Cart
-                        </a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex">
-                                @for($j = 0; $j < 4; $j++)
-                                <i class="fas fa-star text-primary"></i>
-                                @endfor
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <div class="d-flex">
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-3">
-                                    <span class="rounded-circle btn-sm-square border"><i class="fas fa-random"></i></span>
-                                </a>
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-0">
-                                    <span class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endfor
-            </div>
-        </div>
-    </div>
-    <!-- Related Product End -->
 @endsection
 
 @push('styles')
-<style>
-    /* Fix untuk scroll horizontal */
-    .container-fluid.shop,
-    .container-fluid.related-product {
-        overflow-x: hidden;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .col-lg-5.col-xl-3,
-        .col-lg-7.col-xl-9 {
-            width: 100%;
+    <style>
+        /* Adjust width and layout */
+        .container-fluid.shop {
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        
-        .page-header h1 {
-            font-size: 1.8rem;
+
+        .container {
+            max-width: 1200px;
         }
-        
-        .featured-product-item {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+
+        /* Card styling */
+        .card {
+            border-radius: 8px;
+            transition: transform 0.2s ease;
         }
-        
-        .featured-product-item .rounded {
-            margin-right: 0 !important;
-            margin-bottom: 1rem;
+
+        .card:hover {
+            transform: translateY(-2px);
         }
-    }
-    
-    /* Style untuk product images */
-    .single-inner img {
-        transition: transform 0.3s ease;
-    }
-    
-    .single-inner img:hover {
-        transform: scale(1.05);
-    }
-    
-    /* Quantity selector */
-    .input-group.quantity .btn-minus,
-    .input-group.quantity .btn-plus {
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    /* Tab styling */
-    .nav-tabs .nav-link {
-        color: #6c757d;
-        font-weight: 500;
-    }
-    
-    .nav-tabs .nav-link.active {
-        color: #0d6efd;
-        background-color: #fff;
-        border-color: #dee2e6 #dee2e6 #fff;
-    }
-    
-    /* Related products carousel */
-    .related-carousel .owl-item {
-        padding: 0 15px;
-    }
-    
-    .related-item {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    
-    .related-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-</style>
+
+        /* Subtle button styling */
+        .btn-outline-primary {
+            border-color: #6c757d;
+            color: #6c757d;
+            background-color: transparent;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-primary:hover {
+            border-color: #0d6efd;
+            color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+
+        /* Clean tab styling */
+        .nav-tabs .nav-link {
+            color: #495057;
+            font-weight: 400;
+            padding: 0.5rem 0;
+            margin-right: 2rem;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #212529;
+            font-weight: 500;
+            border-bottom: 2px solid #212529;
+            background: transparent;
+        }
+
+        /* Product image container */
+        .single-inner {
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6;
+        }
+
+        /* Quantity input styling */
+        .input-group.quantity {
+            border: none;
+        }
+
+        .input-group.quantity .btn {
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+        }
+
+        .input-group.quantity input {
+            border: 1px solid #dee2e6;
+            border-left: none;
+            border-right: none;
+            background-color: #fff;
+        }
+
+        /* Recommended products */
+        .add-to-cart-mini {
+            padding: 2px 8px;
+            font-size: 12px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+
+            .col-lg-8,
+            .col-lg-4 {
+                width: 100%;
+            }
+
+            .container {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .col-md-6 {
+                width: 100%;
+            }
+
+            .card-body {
+                padding: 1rem !important;
+            }
+        }
+    </style>
 @endpush
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inisialisasi Wow.js
-        if (typeof WOW === 'function') {
-            new WOW().init();
-        }
-        
-        // Inisialisasi Owl Carousel untuk product images
-        if (typeof $.fn.owlCarousel !== 'undefined') {
-            $('.single-carousel').owlCarousel({
-                loop: true,
-                margin: 10,
-                nav: true,
-                dots: true,
-                responsive: {
-                    0: {
-                        items: 1
-                    },
-                    600: {
-                        items: 1
-                    },
-                    1000: {
-                        items: 1
-                    }
-                }
-            });
-            
-            // Inisialisasi Owl Carousel untuk related products
-            $('.related-carousel').owlCarousel({
-                loop: true,
-                margin: 25,
-                nav: true,
-                dots: false,
-                responsive: {
-                    0: {
-                        items: 1
-                    },
-                    576: {
-                        items: 2
-                    },
-                    768: {
-                        items: 3
-                    },
-                    992: {
-                        items: 4
-                    }
-                }
-            });
-        }
-        
-        // Quantity selector functionality
-        const quantityInput = document.querySelector('.quantity input');
-        const minusBtn = document.querySelector('.btn-minus');
-        const plusBtn = document.querySelector('.btn-plus');
-        
-        if (minusBtn && plusBtn && quantityInput) {
-            minusBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                let currentValue = parseInt(quantityInput.value);
-                if (currentValue > 1) {
-                    quantityInput.value = currentValue - 1;
-                }
-            });
-            
-            plusBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                let currentValue = parseInt(quantityInput.value);
-                quantityInput.value = currentValue + 1;
-            });
-        }
-        
-        // Tab switching
-        const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                tabButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                // Add active class to clicked button
-                this.classList.add('active');
-            });
-        });
-        
-        // Color selection
-        const colorRadios = document.querySelectorAll('input[name="color"]');
-        colorRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                colorRadios.forEach(r => {
-                    const label = document.querySelector(`label[for="${r.id}"]`);
-                    if (label) {
-                        if (r.checked) {
-                            label.style.color = '#0d6efd';
-                            label.style.fontWeight = 'bold';
-                        } else {
-                            label.style.color = '';
-                            label.style.fontWeight = '';
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Wow.js
+            if (typeof WOW === 'function') {
+                new WOW({
+                    boxClass: 'wow',
+                    animateClass: 'animated',
+                    offset: 50,
+                    mobile: true,
+                    live: true
+                }).init();
+            }
+
+            // Initialize Owl Carousel
+            if (typeof $.fn.owlCarousel !== 'undefined') {
+                $('.single-carousel').owlCarousel({
+                    loop: true,
+                    margin: 0,
+                    nav: true,
+                    dots: true,
+                    navText: ['<i class="fa fa-chevron-left"></i>', '<i class="fa fa-chevron-right"></i>'],
+                    responsive: {
+                        0: {
+                            items: 1
+                        },
+                        600: {
+                            items: 1
+                        },
+                        1000: {
+                            items: 1
                         }
                     }
                 });
+            }
+
+            // Quantity selector functionality
+            const quantityInput = document.getElementById('quantity');
+            const minusBtn = document.querySelector('.btn-minus');
+            const plusBtn = document.querySelector('.btn-plus');
+
+            if (minusBtn && plusBtn && quantityInput) {
+                minusBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    let currentValue = parseInt(quantityInput.value);
+                    if (currentValue > 1) {
+                        quantityInput.value = currentValue - 1;
+                    }
+                });
+
+                plusBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    let currentValue = parseInt(quantityInput.value);
+                    const maxStock = parseInt(quantityInput.max);
+                    if (currentValue < maxStock) {
+                        quantityInput.value = currentValue + 1;
+                    }
+                });
+
+                // Validate input
+                quantityInput.addEventListener('change', function() {
+                    let value = parseInt(this.value);
+                    const maxStock = parseInt(this.max);
+
+                    if (isNaN(value) || value < 1) {
+                        this.value = 1;
+                    } else if (value > maxStock) {
+                        this.value = maxStock;
+                    }
+                });
+            }
+
+            // Add to cart functionality
+            function addToCart(productId, productName, price, quantity = 1) {
+                // You can implement your cart logic here
+                // Example: AJAX request to add item to cart
+                console.log('Adding to cart:', {
+                    productId: productId,
+                    productName: productName,
+                    price: price,
+                    quantity: quantity
+                });
+
+                // Show notification
+                showNotification(`${productName} added to cart!`);
+            }
+
+            // Notification function
+            function showNotification(message) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = 'position-fixed top-0 end-0 p-3';
+                notification.style.zIndex = '1050';
+                notification.innerHTML = `
+                <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fa fa-check-circle me-2"></i> ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+                document.body.appendChild(notification);
+
+                // Initialize and show toast
+                const toastElement = notification.querySelector('.toast');
+                const toast = new bootstrap.Toast(toastElement, {
+                    delay: 3000
+                });
+                toast.show();
+
+                // Remove element after hide
+                toastElement.addEventListener('hidden.bs.toast', function() {
+                    notification.remove();
+                });
+            }
+
+            // Main add to cart button
+            const addToCartBtn = document.querySelector('.add-to-cart');
+            if (addToCartBtn) {
+                addToCartBtn.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    const productName = this.getAttribute('data-product-name');
+                    const price = this.getAttribute('data-product-price');
+                    const quantity = quantityInput ? quantityInput.value : 1;
+
+                    addToCart(productId, productName, price, quantity);
+                });
+            }
+
+            // Mini add to cart buttons
+            const miniCartBtns = document.querySelectorAll('.add-to-cart-mini');
+            miniCartBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    const productName = this.getAttribute('data-product-name');
+                    const price = this.getAttribute('data-product-price');
+
+                    addToCart(productId, productName, price, 1);
+                });
+            });
+
+            // Tab switching
+            const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                });
             });
         });
-    });
-</script>
+    </script>
 @endpush

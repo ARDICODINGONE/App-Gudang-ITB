@@ -12,7 +12,7 @@
             <div class="col mb-3">
               <label for="kode_gudang" class="form-label">Kode Gudang</label>
               <input type="text" id="kode_gudang" name="kode_gudang" class="form-control"
-                placeholder="Contoh: GD-001" required>
+                placeholder="Contoh: GD-001" value="{{ $nextKode ?? old('kode_gudang') }}" readonly required>
             </div>
           </div>
           <div class="row">

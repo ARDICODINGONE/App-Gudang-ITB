@@ -11,8 +11,15 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\BarangKeluarController;
 
+use App\Models\kategori;
+
 Route::get('/shop', function () {
-    return view('shop');
+    $kategoris = kategori::all();
+    return view('shop', compact('kategoris'));
+});
+
+Route::get('/cart', function () {
+    return view('cart');
 });
 
 Route::get('/', function () {
@@ -37,6 +44,7 @@ Route::get('/barang', [BarangController::class, 'index'])->name('barang-index');
 Route::get('/barang/create', [BarangController::class, 'create'])->name('barang-create');
 Route::post('/barang', [BarangController::class, 'store'])->name('barang-store');
 Route::delete('/barang/{kode_barang}', [BarangController::class, 'destroy'])->name('barang.destroy');
+Route::put('/barang/{kode_barang}', [BarangController::class, 'update'])->name('barang.update');
 // Kategori
 Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori-index');
 Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori-store');
