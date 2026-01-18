@@ -1,0 +1,298 @@
+/* --- 1. GLOBAL & RESET --- */
+body,
+html {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* --- 2. KATEGORI SCROLLER --- */
+.category-scroller {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 10px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 16px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.category-scroller::-webkit-scrollbar {
+    display: none;
+}
+
+.cat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s;
+    flex: 0 0 auto;
+    min-width: 70px;
+}
+
+@media (min-width: 992px) {
+    .category-scroller {
+        overflow-x: visible;
+        justify-content: center;
+        gap: 24px;
+    }
+}
+
+.cat-item:hover {
+    opacity: 0.8;
+    color: #0d6efd;
+}
+
+.cat-bubble {
+    width: 65px;
+    height: 65px;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    font-size: 24px;
+    color: #0d6efd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.cat-name {
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* --- 3. GRID SYSTEM --- */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+    padding: 5px;
+}
+
+@media (max-width: 1200px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+/* --- 4. PRODUCT CARD (STATIS / TANPA ANIMASI NAIK) --- */
+.product-card {
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    overflow: visible;
+    /* Wajib visible agar popup tidak terpotong */
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* Hanya transisi warna border, tidak ada animasi gerak */
+    transition: border-color 0.2s ease;
+}
+
+/* Hover hanya mengubah warna garis pinggir */
+.product-card:hover {
+    border-color: #0d6efd;
+    z-index: 20;
+    /* Agar popup tampil di atas tumpukan card lain */
+}
+
+.product-image {
+    width: 100%;
+    height: 135px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #f0f0f0;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 10px;
+}
+
+.product-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.product-body {
+    padding: 12px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    color: #212529;
+}
+
+.product-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0d6efd;
+    margin-bottom: 10px;
+}
+
+.product-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    position: relative;
+}
+
+.btn-specs,
+.btn-cart {
+    flex: 1;
+    font-size: 12px;
+    padding: 6px 4px;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.btn-specs {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+.btn-specs:hover {
+    background-color: #e9ecef;
+    color: #212529;
+}
+
+.btn-cart {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.btn-cart:hover {
+    background-color: #0b5ed7;
+}
+
+/* --- 5. POPUP SPESIFIKASI (TEMA PUTIH & BERGARIS) --- */
+.spec-popup {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    /* Muncul di atas tombol */
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 10px;
+    /* Jarak sedikit dari tombol */
+
+    width: 220px;
+    max-width: 90vw;
+
+    /* Tema Putih */
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid #dee2e6;
+    /* Garis tepi abu-abu agar jelas */
+
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: left;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    /* Shadow lebih halus untuk background putih */
+}
+
+/* Panah di bawah popup (Sekarang Putih & Bergaris) */
+.spec-popup::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    /* Setengah posisi agar terlihat menempel */
+    left: 50%;
+    margin-left: -6px;
+    width: 12px;
+    height: 12px;
+
+    /* Warna panah mengikuti background popup */
+    background: #ffffff;
+
+    /* Membuat garis tepi pada panah (Sisi bawah dan kanan kotak yang diputar) */
+    border-bottom: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+
+    /* Putar kotak 45 derajat agar menjadi segitiga */
+    transform: rotate(45deg);
+}
+
+/* Label tebal di dalam popup */
+.spec-popup .spec-label {
+    color: #6c757d;
+    /* Abu-abu agak gelap agar kontras di background putih */
+    font-weight: 700;
+}
+
+.spec-popup.show {
+    display: block;
+    animation: popupFadeIn 0.2s ease-out;
+}
+
+@keyframes popupFadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* --- 6. LAIN-LAIN --- */
+.cart-float {
+    position: absolute;
+    right: 10px;
+    bottom: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0d6efd;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s ease;
+}
+
+.cart-float.show {
+    opacity: 1;
+    transform: translateY(-15px);
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}

@@ -24,7 +24,9 @@
             <tr>
               <th>Kode</th>
               <th>Nama</th>
-              <th>Stok</th>
+              <th>Deskripsi</th>
+              <th>Harga</th>
+              <th>Gambar</th>
               <th>Kategori</th>
               <th>Satuan</th>
               <th>Aksi</th>
@@ -35,19 +37,29 @@
               <tr>
                 <td>{{ $item->kode_barang }}</td>
                 <td>{{ $item->nama_barang }}</td>
-                <td>{{ isset($item->stok) && $item->stok->first() ? $item->stok->first()->stok : '-' }}</td>
+                <td>{{ $item->deskripsi ? \Illuminate\Support\Str::limit($item->deskripsi, 60) : '-' }}</td>
+                <td>{{ isset($item->harga) ? number_format($item->harga, 2, ',', '.') : '-' }}</td>
+                <td>
+                  @if($item->image)
+                    <img src="{{ asset('storage/' . $item->image) }}" alt="image" style="max-height:48px; max-width:48px; object-fit:cover;" />
+                  @else
+                    -
+                  @endif
+                </td>
                 <td>{{ $item->kategori ? $item->kategori->kategori : '-' }}</td>
                 <td>{{ $item->satuan }}</td>
                 <td>
                   <div class="d-flex">
                     <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
-                      onclick="editBarang(
-                          '{{ route('barang.update', $item->kode_barang) }}',
-                          '{{ $item->kode_barang }}',
-                          '{{ $item->nama_barang }}',
-                          '{{ $item->kategori ? $item->kategori->id : '' }}',
-                          '{{ $item->satuan }}'
-                        )">
+                      onclick="editBarangFromElement(this)"
+                      data-action="{{ route('barang.update', $item->kode_barang) }}"
+                      data-kode="{{ $item->kode_barang }}"
+                      data-nama="{{ $item->nama_barang }}"
+                      data-kategori="{{ $item->kategori ? $item->kategori->id : '' }}"
+                      data-satuan="{{ $item->satuan }}"
+                      data-deskripsi="{{ $item->deskripsi }}"
+                      data-harga="{{ $item->harga }}"
+                      data-image="{{ $item->image }}">
                         <i class="ri-pencil-line me-1"></i>
                       Edit
                     </a>
@@ -63,7 +75,7 @@
             @endforeach
             @if ($barangs->isEmpty())
               <tr>
-                <td colspan="6" class="text-center">Belum ada data barang.</td>
+                <td colspan="9" class="text-center">Belum ada data barang.</td>
               </tr>
             @endif
           </tbody>
@@ -98,16 +110,83 @@
       myModal.show();
     }
 
-    function editBarang(actionUrl, kode, nama, kategori_id, satuan) {
+    function editBarang(actionUrl, kode, nama, kategori_id, satuan, deskripsi, harga, image) {
       document.getElementById('edit_kode_barang').value = kode;
       document.getElementById('edit_nama_barang').value = nama;
       document.getElementById('edit_kategori_id').value = kategori_id;
       document.getElementById('edit_satuan').value = satuan;
+      if (document.getElementById('edit_deskripsi')) document.getElementById('edit_deskripsi').value = deskripsi || '';
+      const hiddenHarga = document.getElementById('edit_harga');
+      const formatHarga = document.getElementById('edit_harga_format');
+
+      hiddenHarga.value = harga || 0;
+      formatHarga.value = formatRupiah((harga || 0).toString());
+
+      // image preview for edit modal
+      var editPreview = document.getElementById('edit_image_preview');
+      if (editPreview) {
+        if (image) {
+          editPreview.src = '/storage/' + image;
+          editPreview.style.display = 'inline-block';
+        } else {
+          editPreview.src = '';
+          editPreview.style.display = 'none';
+        }
+      }
 
       document.getElementById('formEditBarang').action = actionUrl;
 
       var myModal = new bootstrap.Modal(document.getElementById('modalEditBarang'));
       myModal.show();
     }
+
+    function editBarangFromElement(el) {
+    const d = el.dataset;
+    const harga = parseInt(d.harga) || 0;
+
+    formEdit.action = d.action;
+
+    document.getElementById('edit_kode_barang').value = d.kode;
+    document.getElementById('edit_nama_barang').value = d.nama;
+    document.getElementById('edit_deskripsi').value = d.deskripsi || '';
+    document.getElementById('edit_kategori_id').value = d.kategori;
+    document.getElementById('edit_satuan').value = d.satuan;
+
+    editHargaHidden.value = harga;
+    editHargaFormat.value = formatRupiah(harga.toString());
+
+    const img = document.getElementById('edit_image_preview');
+    if (d.image) {
+        img.src = '/storage/' + d.image;
+        img.style.display = 'block';
+    } else {
+        img.style.display = 'none';
+    }
+
+    new bootstrap.Modal(document.getElementById('modalEditBarang')).show();
+}
+
+
+    // Preview handlers for create and edit file inputs
+    function readURL(input, previewId) {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var img = document.getElementById(previewId);
+          img.src = e.target.result;
+          img.style.display = 'inline-block';
+        }
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.id === 'create_image') {
+        readURL(e.target, 'create_image_preview');
+      }
+      if (e.target && e.target.id === 'edit_image') {
+        readURL(e.target, 'edit_image_preview');
+      }
+    });
   </script>
 @endsection

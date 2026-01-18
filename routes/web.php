@@ -10,17 +10,31 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\BarangKeluarController;
+use App\Http\Controllers\NotificationController;
 
 use App\Models\kategori;
+use App\Http\Controllers\CartController;
 
 Route::get('/shop', function () {
     $kategoris = kategori::all();
     return view('shop', compact('kategoris'));
 });
 
+// API endpoint to return products as JSON for the shop page
+Route::get('/shop/products', [BarangController::class, 'apiIndex'])->name('shop.products');
+
 Route::get('/cart', function () {
     return view('cart');
 });
+
+Route::put('/cart/note', [CartController::class, 'updateNote']);
+
+// Cart API
+Route::get('/cart/items', [CartController::class, 'items']);
+Route::post('/cart/items', [CartController::class, 'add']);
+Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
+Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
+Route::delete('/cart/clear', [CartController::class, 'clear']);
 
 Route::get('/', function () {
     return view('welcome');
@@ -36,13 +50,17 @@ Route::get('/checkout', function () {
 
 // Gudang
 Route::get('/gudang', [GudangController::class, 'index'])->name('gudang-index');
+
 Route::post('/gudang/store', [GudangController::class, 'store'])->name('gudang.store');
+// add/remove product endpoints removed (handled via admin UI or other flows)
 Route::delete('/gudang/{kode_gudang}', [GudangController::class, 'destroy'])->name('gudang.destroy');
 Route::put('/gudang/{kode_gudang}', [GudangController::class, 'update'])->name('gudang.update');
 // Barang
 Route::get('/barang', [BarangController::class, 'index'])->name('barang-index');
 Route::get('/barang/create', [BarangController::class, 'create'])->name('barang-create');
 Route::post('/barang', [BarangController::class, 'store'])->name('barang-store');
+Route::get('/barang/next-kode', [BarangController::class, 'nextKode'])->name('barang.nextKode');
+Route::get('/barang/check-duplicate', [BarangController::class, 'checkDuplicate'])->name('barang.checkDuplicate');
 Route::delete('/barang/{kode_barang}', [BarangController::class, 'destroy'])->name('barang.destroy');
 Route::put('/barang/{kode_barang}', [BarangController::class, 'update'])->name('barang.update');
 // Kategori
@@ -67,6 +85,8 @@ Route::get('/barang-masuk/create', [BarangMasukController::class, 'create'])->na
 Route::post('/barang-masuk/store', [BarangMasukController::class, 'store'])->name('barang-masuk.store');
 Route::put('/barang-masuk/{barang_masuk}', [BarangMasukController::class, 'update'])->name('barang-masuk.update');
 Route::delete('/barang-masuk/{barang_masuk}', [BarangMasukController::class, 'destroy'])->name('barang-masuk.destroy');
+// Bulk delete for barang masuk
+Route::post('/barang-masuk/bulk-delete', [BarangMasukController::class, 'bulkDestroy'])->name('barang-masuk.bulkDestroy');
 
 // Barang Keluar
 Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar-index');
@@ -74,6 +94,16 @@ Route::get('/barang-keluar/create', [BarangKeluarController::class, 'create'])->
 Route::post('/barang-keluar/store', [BarangKeluarController::class, 'store'])->name('barang-keluar.store');
 Route::put('/barang-keluar/{barang_keluar}', [BarangKeluarController::class, 'update'])->name('barang-keluar.update');
 Route::delete('/barang-keluar/{barang_keluar}', [BarangKeluarController::class, 'destroy'])->name('barang-keluar.destroy');
+
+// Notification
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
+    Route::get('/notifications/recent', [NotificationController::class, 'getRecent'])->name('notifications.recent');
+    Route::get('/notifications/{id}/detail', [NotificationController::class, 'getDetail'])->name('notifications.detail');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'delete'])->name('notifications.delete');
+});
 
 // Authentication routes
 Route::get('/login', function () {

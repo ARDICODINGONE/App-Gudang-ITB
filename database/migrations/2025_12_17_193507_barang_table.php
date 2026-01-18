@@ -14,6 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->string('kode_barang')->unique();
             $table->string('nama_barang')->unique();
+            $table->text('deskripsi')->nullable();
+            $table->decimal('harga', 15, 2);
             $table->foreignId('kategori_id')->constrained('kategori')->onDelete('cascade');
             $table->string('satuan');
             $table->timestamps();

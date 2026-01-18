@@ -64,7 +64,7 @@
                                 @endauth
                             </div>
                             <button type="button" class="btn-modern px-4 w-100 d-block mx-auto"
-                                onclick="window.location.href='{{ route('barang-index', ['gudang' => $gudang->kode_gudang]) }}'">Masuk</button>
+                                onclick="window.location.href='{{ url('/gudang') }}?kode={{ $gudang->kode_gudang }}'">Masuk</button>
                         </div>
                     </div>
                 @endforeach

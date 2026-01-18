@@ -46,4 +46,8 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 }

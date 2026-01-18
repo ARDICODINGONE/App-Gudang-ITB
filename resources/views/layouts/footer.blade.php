@@ -95,7 +95,6 @@
                     <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right me-2"></i>Ganesha</a>
                     <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right me-2"></i>Jatinangor</a>
                     <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right me-2"></i>Cirebon</a>
-                    <a class="text-white-50" href="#"><i class="fa fa-angle-right me-2"></i>Jakarta</a>
                 </div>
             </div>
             

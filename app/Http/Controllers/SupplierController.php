@@ -24,11 +24,15 @@ class SupplierController extends Controller
             'no_telp.unique' => 'Nomor telepon sudah terdaftar.',
         ]);
 
-        supplier::create([
+        $new = supplier::create([
             'nama_supplier' => $request->nama_supplier,
             'alamat' => $request->alamat,
             'no_telp' => $request->no_telp,
         ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['id' => $new->id, 'nama_supplier' => $new->nama_supplier]);
+        }
 
         return redirect()->route('supplier-index')->with('success', 'Supplier berhasil ditambahkan!');
     }

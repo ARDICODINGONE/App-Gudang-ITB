@@ -4,12 +4,35 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Gudang; // PascalCase
+use App\Models\barang;
+use App\Models\kategori;
+use App\Models\stok;
+use App\Models\supplier;
 use Illuminate\Support\Facades\Storage;
 
 class GudangController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        // If a specific gudang code is requested, show its product listing page
+        $kode = $request->query('kode');
+        if ($kode) {
+            $gudangKode = $kode;
+            $kategoris = kategori::all();
+
+            // Get barang that have stok records for this gudang
+            $barangs = barang::with(['kategori', 'stok' => function($q) use ($kode) {
+                $q->where('kode_gudang', $kode);
+            }])->whereHas('stok', function ($q) use ($kode) {
+                $q->where('kode_gudang', $kode);
+            })->orderBy('nama_barang')->get();
+            // also pass the full barang index so the "Pilih Barang" modal shows all items
+            $allBarangs = barang::orderBy('nama_barang')->get();
+            $gudangs = Gudang::orderBy('kode_gudang')->get();
+            $suppliers = supplier::orderBy('nama_supplier')->get();
+            return view('shop', compact('barangs', 'kategoris', 'gudangKode', 'gudangs', 'suppliers', 'allBarangs'));
+        }
+
         $gudangs = Gudang::orderBy('kode_gudang')->get();
 
         $last = Gudang::orderBy('kode_gudang', 'desc')->first();
@@ -103,4 +126,17 @@ class GudangController extends Controller
         // Redirect kembali
         return redirect()->route('gudang-index')->with('success', 'Data gudang berhasil dihapus!');
     }
+
+    /**
+     * Add multiple existing products to a gudang's stok.
+     * Expects JSON: { product_ids: [1,2,3], initial_stock: 0 }
+     */
+    // addProducts removed — functionality deprecated when UI picker/bulk-delete removed
+
+    /**
+     * Remove multiple products from a gudang's stok.
+     * Expects JSON: { product_ids: [1,2,3] }
+     */
+    // removeProducts removed — functionality deprecated when UI picker/bulk-delete removed
+    
 }
