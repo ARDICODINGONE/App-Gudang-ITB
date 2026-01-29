@@ -110,6 +110,7 @@ Route::post('/pengajuan/{id}/reject', [PengajuanController::class, 'reject'])->n
 
 // Notification
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
     Route::get('/notifications/recent', [NotificationController::class, 'getRecent'])->name('notifications.recent');
     Route::get('/notifications/{id}/detail', [NotificationController::class, 'getDetail'])->name('notifications.detail');

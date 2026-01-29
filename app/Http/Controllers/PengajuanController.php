@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Gudang;
 use App\Models\Stok;
 use App\Models\Cart;
+use App\Models\Pengajuan;
+use App\Helpers\NotificationHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -146,6 +148,10 @@ class PengajuanController extends Controller
 
             DB::commit();
 
+            // Send notification to approvers
+            $pengajuan = Pengajuan::find($pengajuanId);
+            NotificationHelper::notifyApproversOnPengajuanSubmitted($pengajuan);
+
             return redirect()->route('pengajuan.index')->with('success', 'Pengajuan berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -240,6 +246,10 @@ class PengajuanController extends Controller
 
             DB::commit();
 
+            // Send notification to approvers
+            $pengajuan = Pengajuan::find($pengajuanId);
+            NotificationHelper::notifyApproversOnPengajuanSubmitted($pengajuan);
+
             return redirect()->route('pengajuan.list')->with('success', 'Pengajuan berhasil dibuat dari keranjang.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -249,20 +259,58 @@ class PengajuanController extends Controller
 
     public function list(Request $request)
     {
-        $items = DB::table('pengajuan')->orderBy('created_at', 'desc')->paginate(20);
-        return view('content.pengajuan.list', compact('items'));
+        $user = Auth::user();
+        $isApprover = $user && in_array($user->role, ['approval', 'atasan', 'admin']);
+
+        if ($isApprover) {
+            // Admin/Approval/Atasan: Show all pengajuan
+            $items = DB::table('pengajuan')
+                ->leftJoin('users as u', 'pengajuan.user_id', '=', 'u.id')
+                ->select('pengajuan.*', 'u.nama as user_nama')
+                ->orderBy('pengajuan.created_at', 'desc')
+                ->paginate(20);
+            $view = 'content.pengajuan.list-approval';
+        } else {
+            // Regular user: Show only their own pengajuan
+            $items = DB::table('pengajuan')
+                ->where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+            $view = 'content.pengajuan.list';
+        }
+
+        return view($view, compact('items', 'isApprover'));
     }
 
     public function show($id)
     {
         $pengajuan = DB::table('pengajuan')->where('id', $id)->first();
+        
+        if (!$pengajuan) {
+            return back()->with('error', 'Pengajuan tidak ditemukan.');
+        }
+
+        // Authorization: User bisa lihat jika:
+        // 1. Dia yang buat pengajuan (user_id sama)
+        // 2. Dia adalah approval/atasan/admin
+        $user = Auth::user();
+        $isApprover = $user && in_array($user->role, ['approval', 'atasan', 'admin']);
+        $isPengaju = $user && $pengajuan->user_id == $user->id;
+
+        if (!$isApprover && !$isPengaju) {
+            abort(403, 'Anda tidak memiliki akses ke pengajuan ini');
+        }
+
         $details = DB::table('pengajuan_detail as pd')
             ->leftJoin('barang as b', 'pd.barang_id', '=', 'b.id')
             ->where('pd.pengajuan_id', $id)
             ->select('pd.*', 'b.nama_barang')
             ->get();
 
-        return view('content.pengajuan.show', compact('pengajuan', 'details'));
+        // Get user info
+        $user_pengaju = DB::table('users')->where('id', $pengajuan->user_id)->first();
+
+        return view('content.pengajuan.show', compact('pengajuan', 'details', 'user_pengaju', 'isApprover', 'isPengaju'));
     }
 
     public function approve(Request $request, $id)
@@ -310,6 +358,9 @@ class PengajuanController extends Controller
 
             DB::commit();
 
+            // Send notification to pengaju
+            NotificationHelper::notifyApprovalDecision($pengajuan, true);
+
             return redirect()->route('pengajuan.show', $id)->with('success', 'Pengajuan disetujui dan stok diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -337,6 +388,9 @@ class PengajuanController extends Controller
             'updated_at' => now(),
             'note' => $request->input('note') ?? null,
         ]);
+
+        // Send notification to pengaju
+        NotificationHelper::notifyApprovalDecision($pengajuan, false);
 
         return redirect()->route('pengajuan.show', $id)->with('success', 'Pengajuan ditolak.');
     }
