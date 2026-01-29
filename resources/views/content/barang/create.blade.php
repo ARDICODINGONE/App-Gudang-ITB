@@ -28,7 +28,6 @@
                 @error('nama_barang')
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
-                <div id="duplicateWarning" class="form-text text-warning" style="display:none;">&nbsp;</div>
               </div>
 
               <div class="col-md-6">
@@ -212,85 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 </script>
-<script>
-// Duplicate check for nama_barang
-document.addEventListener('DOMContentLoaded', function () {
-  const namaField = document.querySelector('[name="nama_barang"]');
-  const kategoriField = document.querySelector('[name="kategori_id"]');
-  const satuanField = document.querySelector('[name="satuan"]');
-  const warningEl = document.getElementById('duplicateWarning');
-  const submitBtn = document.querySelector('#formBarang button[type="submit"]');
-  let duplicate = false;
-  let timer = null;
 
-  function setWarning(text) {
-    if (!warningEl) return;
-    if (text) {
-      warningEl.style.display = 'block';
-      warningEl.textContent = text;
-    } else {
-      warningEl.style.display = 'none';
-      warningEl.textContent = '';
-    }
-  }
-
-  function checkDuplicate() {
-    const nama = namaField.value.trim();
-    if (!nama) {
-      duplicate = false;
-      setWarning('');
-      submitBtn.disabled = false;
-      return;
-    }
-
-    const params = new URLSearchParams();
-    params.append('nama_barang', nama);
-    if (kategoriField && kategoriField.value) params.append('kategori_id', kategoriField.value);
-    if (satuanField && satuanField.value) params.append('satuan', satuanField.value.trim());
-
-    fetch("{{ route('barang.checkDuplicate') }}?" + params.toString())
-      .then(res => res.ok ? res.json() : Promise.reject(res))
-      .then(data => {
-        if (data && data.exists) {
-          duplicate = true;
-          setWarning(data.message || 'Barang serupa sudah ada.');
-          if (submitBtn) submitBtn.disabled = true;
-        } else {
-          duplicate = false;
-          setWarning('');
-          if (submitBtn) submitBtn.disabled = false;
-        }
-      })
-      .catch(() => {
-        // network error — allow submit but hide warning
-        duplicate = false;
-        setWarning('');
-        if (submitBtn) submitBtn.disabled = false;
-      });
-  }
-
-  if (namaField) {
-    namaField.addEventListener('input', function () {
-      clearTimeout(timer);
-      timer = setTimeout(checkDuplicate, 500);
-    });
-
-    // also validate on blur immediately
-    namaField.addEventListener('blur', checkDuplicate);
-  }
-
-  // ensure check before submit as final guard
-  const formEl = document.getElementById('formBarang');
-  if (formEl) {
-    formEl.addEventListener('submit', function (e) {
-      if (duplicate) {
-        e.preventDefault();
-        namaField.focus();
-      }
-    });
-  }
-});
-</script>
 
 <script>
 // Show loading spinner on submit (disable button) similar to barang_masuk

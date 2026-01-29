@@ -3,25 +3,26 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\barang_keluar;
-use App\Models\barang;
-use App\Models\gudang;
+use App\Models\BarangKeluar;
+use App\Models\Barang;
+use App\Models\Gudang;
+use App\Models\Stok;
 
 class BarangKeluarController extends Controller
 {
     public function index()
     {
-        $items = barang_keluar::with(['barang', 'gudang'])->orderBy('tanggal', 'desc')->get();
-        $barangs = barang::orderBy('nama_barang')->get();
-        $gudangs = gudang::orderBy('kode_gudang')->get();
+        $items = BarangKeluar::with(['barang', 'gudang'])->orderBy('tanggal', 'desc')->get();
+        $barangs = Barang::orderBy('nama_barang')->get();
+        $gudangs = Gudang::orderBy('kode_gudang')->get();
 
         return view('content.barang_keluar.index', compact('items', 'barangs', 'gudangs'));
     }
 
     public function create()
     {
-        $barangs = barang::orderBy('nama_barang')->get();
-        $gudangs = gudang::orderBy('kode_gudang')->get();
+        $barangs = Barang::orderBy('nama_barang')->get();
+        $gudangs = Gudang::orderBy('kode_gudang')->get();
         return view('content.barang_keluar.create', compact('barangs', 'gudangs'));
     }
 
@@ -34,17 +35,26 @@ class BarangKeluarController extends Controller
             'tanggal' => 'required|date',
         ]);
 
-        barang_keluar::create([
+        BarangKeluar::create([
             'id_barang' => $request->id_barang,
             'kode_gudang' => $request->kode_gudang,
             'jumlah' => $request->jumlah,
             'tanggal' => $request->tanggal,
         ]);
 
+        // Update stok: decrement existing stok for the gudang
+        $existing = Stok::where('id_barang', $request->id_barang)
+            ->where('kode_gudang', $request->kode_gudang)
+            ->first();
+
+        if ($existing) {
+            $existing->decrement('stok', (int) $request->jumlah);
+        }
+
         return redirect()->route('barang-keluar-index')->with('success', 'Barang keluar berhasil ditambahkan!');
     }
 
-    public function update(Request $request, barang_keluar $barang_keluar)
+    public function update(Request $request, BarangKeluar $barangKeluar)
     {
         $request->validate([
             'id_barang' => 'required|exists:barang,id',
@@ -53,7 +63,7 @@ class BarangKeluarController extends Controller
             'tanggal' => 'required|date',
         ]);
 
-        $barang_keluar->update([
+        $barangKeluar->update([
             'id_barang' => $request->id_barang,
             'kode_gudang' => $request->kode_gudang,
             'jumlah' => $request->jumlah,
@@ -63,9 +73,9 @@ class BarangKeluarController extends Controller
         return redirect()->route('barang-keluar-index')->with('success', 'Data barang keluar berhasil diperbarui!');
     }
 
-    public function destroy(barang_keluar $barang_keluar)
+    public function destroy(BarangKeluar $barangKeluar)
     {
-        $barang_keluar->delete();
+        $barangKeluar->delete();
         return redirect()->route('barang-keluar-index')->with('success', 'Data barang keluar berhasil dihapus!');
     }
 }

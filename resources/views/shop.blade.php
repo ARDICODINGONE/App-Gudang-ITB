@@ -150,6 +150,8 @@
             card.dataset.price = p.price || p.harga || '';
             card.dataset.category = p.category || '';
             
+            const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
+            
             card.innerHTML = `
                 <div class="product-image">
                     <img src="${p.image}" alt="${p.name}">
@@ -160,8 +162,10 @@
                     <div class="product-stock">Stok: ${p.stok !== undefined && p.stok !== null ? p.stok : '-'}</div>
                     <div class="product-actions">
                         <button class="btn-specs">Spesifikasi</button>
-                        <button class="btn-cart">+Keranjang</button>
-                        <span class="cart-float">+1</span>
+                        ${isAuthenticated ? `
+                            <button class="btn-cart">+Keranjang</button>
+                            <span class="cart-float">+1</span>
+                        ` : ''}
                         <div class="spec-popup">
                             <div><span class="spec-label">Kode:</span> ${p.kode || ''}</div>
                             <div><span class="spec-label">Satuan:</span> ${p.satuan || ''}</div>
@@ -179,10 +183,13 @@
                 popup.classList.toggle('show');
             });
 
-            card.querySelector('.btn-cart').addEventListener('click', (e) => {
-                e.stopPropagation();
-                addToCart(card.querySelector('.btn-cart'));
-            });
+            const cartBtn = card.querySelector('.btn-cart');
+            if (cartBtn) {
+                cartBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    addToCart(card.querySelector('.btn-cart'));
+                });
+            }
 
             return card;
         }

@@ -119,6 +119,9 @@
                     <i class="fas fa-shopping-cart"></i>
                     @if($cartCount > 0)<span class="badge-count">{{ $cartCount }}</span>@endif
                 </a>
+                <a href="{{ url('/pengajuan/list') }}" class="nav-action-icon {{ Request::is('pengajuan*') ? 'active' : '' }}" title="Pengajuan">
+                    <i class="fas fa-paper-plane"></i>
+                </a>
                 @auth
                 <a href="#" class="nav-action-icon" id="notificationBtn" title="Notifikasi">
                     <i class="fas fa-bell"></i>

@@ -29,15 +29,7 @@
                 <div class="form-control" style="background:#f8f9fa;">{{ $gudangKode }}</div>
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Supplier</label>
-                <select name="id_supplier" class="form-control" required>
-                  <option value="">-- Pilih Supplier --</option>
-                  @foreach($suppliers as $s)
-                    <option value="{{ $s->id }}">{{ $s->nama_supplier }}</option>
-                  @endforeach
-                </select>
-              </div>
+              
 
               <div class="mb-3">
                 <label class="form-label">Jumlah</label>
@@ -46,7 +38,7 @@
 
               <div class="mb-3">
                 <label class="form-label">Tanggal</label>
-                <input type="date" name="tanggal" class="form-control" required>
+                <input type="date" name="tanggal" class="form-control" required value="{{ old('tanggal', \Carbon\Carbon::now()->format('Y-m-d')) }}">
               </div>
 
               <div class="d-flex justify-content-end">

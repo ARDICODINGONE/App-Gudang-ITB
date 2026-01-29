@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\barang;
-use App\Models\kategori;
-use App\Models\stok;
-use App\Models\gudang;
-use App\Models\barang_masuk;
+use App\Models\Barang;
+use App\Models\Kategori;
+use App\Models\Stok;
+use App\Models\Gudang;
+use App\Models\BarangMasuk;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BarangController extends Controller
 {
@@ -18,19 +19,19 @@ class BarangController extends Controller
         $gudangKode = $request->query('gudang');
 
         if ($gudangKode) {
-            $barangs = barang::with(['kategori', 'stok' => function ($q) use ($gudangKode) {
+            $barangs = Barang::with(['kategori', 'stok' => function ($q) use ($gudangKode) {
                 $q->where('kode_gudang', $gudangKode);
             }])->whereHas('stok', function ($q) use ($gudangKode) {
                 $q->where('kode_gudang', $gudangKode);
             })->get();
         } else {
-            $barangs = barang::with('kategori')->get();
+            $barangs = Barang::with('kategori')->get();
         }
 
-        $kategoris = kategori::all();
+        $kategoris = Kategori::all();
 
         // compute next kode_barang so modal can render it server-side (no client delay)
-        $last = barang::where('kode_barang', 'like', 'BR%')
+        $last = Barang::where('kode_barang', 'like', 'BR%')
             ->orderByRaw('LENGTH(kode_barang) desc, kode_barang desc')
             ->first();
 
@@ -45,10 +46,10 @@ class BarangController extends Controller
 
     public function create()
     {
-        $kategoris = kategori::all();
-        $gudangs = gudang::all();
+        $kategoris = Kategori::all();
+        $gudangs = Gudang::all();
         // compute next kode_barang for direct create page as well
-        $last = barang::where('kode_barang', 'like', 'BR%')
+        $last = Barang::where('kode_barang', 'like', 'BR%')
             ->orderByRaw('LENGTH(kode_barang) desc, kode_barang desc')
             ->first();
 
@@ -165,13 +166,13 @@ class BarangController extends Controller
         $gudangKode = $request->query('gudang');
         if ($gudangKode) {
             // Aggregate masuk per barang and read current stok per barang for this gudang
-            $masukAgg = barang_masuk::select('id_barang', DB::raw('SUM(jumlah) as total_masuk'))
+            $masukAgg = BarangMasuk::select('id_barang', DB::raw('SUM(jumlah) as total_masuk'))
                 ->where('kode_gudang', $gudangKode)
                 ->groupBy('id_barang')
                 ->get()
                 ->keyBy('id_barang');
 
-            $stokItems = stok::where('kode_gudang', $gudangKode)->get()->keyBy('id_barang');
+            $stokItems = Stok::where('kode_gudang', $gudangKode)->get()->keyBy('id_barang');
 
             $ids = $masukAgg->keys()->all();
 
@@ -268,6 +269,326 @@ class BarangController extends Controller
         }
 
         return response()->json(['exists' => false]);
+    }
+
+    /**
+     * Download a CSV template for importing barang
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="barang-template.csv"',
+        ];
+
+        $columns = ['kode_barang', 'nama_barang', 'kategori', 'satuan', 'deskripsi', 'harga', 'image'];
+
+        $callback = function () use ($columns) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $columns);
+            // sample row (image can be URL or path relative to public/ or storage/app/public/)
+            fputcsv($handle, ['BR001', 'Contoh Barang', 'Umum', 'pcs', 'Deskripsi contoh', '10000', 'https://example.com/sample.jpg']);
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Import barang from uploaded CSV file.
+     * Expected headers: kode_barang,nama_barang,kategori,satuan,deskripsi,harga,gudang
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt,zip',
+        ]);
+
+        $file = $request->file('file');
+
+        $extractedDir = null;
+        $filePathToRead = $file->getRealPath();
+
+        // If a ZIP is uploaded, extract and find the first CSV inside
+        if (strtolower($file->getClientOriginalExtension()) === 'zip' || strpos($file->getMimeType(), 'zip') !== false) {
+            $zip = new \ZipArchive();
+            $tmpDir = storage_path('app/import_' . time() . '_' . Str::random(6));
+            if (!mkdir($tmpDir, 0755, true) && !is_dir($tmpDir)) {
+                return redirect()->back()->with('error', 'Gagal membuat folder sementara untuk ekstraksi ZIP.');
+            }
+            if ($zip->open($file->getRealPath()) === true) {
+                $zip->extractTo($tmpDir);
+                $zip->close();
+                $extractedDir = $tmpDir;
+
+                // find csv file inside extracted directory (recursively)
+                $rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tmpDir));
+                $csvFound = null;
+                foreach ($rii as $f) {
+                    if ($f->isFile() && preg_match('/\.csv$/i', $f->getFilename())) {
+                        $csvFound = $f->getPathname();
+                        break;
+                    }
+                }
+                if (!$csvFound) {
+                    // cleanup
+                    $this->rrmdir($tmpDir);
+                    return redirect()->back()->with('error', 'ZIP tidak mengandung file CSV.');
+                }
+                $filePathToRead = $csvFound;
+            } else {
+                return redirect()->back()->with('error', 'Gagal membuka file ZIP.');
+            }
+        }
+
+        $handle = fopen($filePathToRead, 'r');
+        if (!$handle) {
+            return redirect()->back()->with('error', 'Gagal membuka file.');
+        }
+
+        // Read raw header line so we can detect delimiter (Excel in some locales uses ';')
+        $rawHeaderLine = fgets($handle);
+        if ($rawHeaderLine === false) {
+            fclose($handle);
+            return redirect()->back()->with('error', 'File CSV kosong atau tidak valid.');
+        }
+
+        // detect delimiter: prefer semicolon if it appears more than commas
+        $delimiter = (substr_count($rawHeaderLine, ';') > substr_count($rawHeaderLine, ',')) ? ';' : ',';
+
+        // parse header respecting detected delimiter
+        $header = str_getcsv(trim($rawHeaderLine), $delimiter);
+
+        // remove BOM from first header cell if present
+        if (!empty($header) && is_string($header[0])) {
+            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+        }
+
+        $map = [];
+        foreach ($header as $i => $h) {
+            $map[strtolower(trim($h))] = $i;
+        }
+
+        // required headers
+        $required = ['nama_barang', 'kategori', 'satuan', 'harga'];
+        $missing = array_filter($required, function ($r) use ($map) { return !array_key_exists($r, $map); });
+        if (!empty($missing)) {
+            fclose($handle);
+            $missingList = implode(', ', $missing);
+            return redirect()->back()->with('error', "Header CSV tidak lengkap. Kolom yang diperlukan: {$missingList}.");
+        }
+
+        // find last numeric suffix for kode generation
+        $last = barang::where('kode_barang', 'like', 'BR%')
+            ->orderByRaw('LENGTH(kode_barang) desc, kode_barang desc')
+            ->first();
+        $num = 0;
+        if ($last && preg_match('/BR0*([0-9]+)$/', $last->kode_barang, $m)) {
+            $num = (int) $m[1];
+        }
+
+        $rowNumber = 1;
+        $imported = 0;
+        $errors = [];
+
+        // read remaining rows with detected delimiter
+        while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+            $rowNumber++;
+            $kode = isset($map['kode_barang']) && isset($row[$map['kode_barang']]) ? trim($row[$map['kode_barang']]) : '';
+            $nama = isset($map['nama_barang']) && isset($row[$map['nama_barang']]) ? trim($row[$map['nama_barang']]) : '';
+            $kategoriVal = isset($map['kategori']) && isset($row[$map['kategori']]) ? trim($row[$map['kategori']]) : '';
+            $satuan = isset($map['satuan']) && isset($row[$map['satuan']]) ? trim($row[$map['satuan']]) : '';
+            $deskripsi = isset($map['deskripsi']) && isset($row[$map['deskripsi']]) ? trim($row[$map['deskripsi']]) : '';
+            $harga = isset($map['harga']) && isset($row[$map['harga']]) ? trim($row[$map['harga']]) : '';
+            $imageVal = isset($map['image']) && isset($row[$map['image']]) ? trim($row[$map['image']]) : '';
+            // no kode_gudang expected in CSV for barang import (stok managed elsewhere)
+            $gudangKode = null;
+
+            // basic validations
+            if ($nama === '') {
+                $errors[] = "Baris {$rowNumber}: nama_barang kosong.";
+                continue;
+            }
+
+            if ($satuan === '') {
+                $errors[] = "Baris {$rowNumber}: satuan kosong.";
+                continue;
+            }
+
+            $hargaNumeric = preg_replace('/[^0-9\-\.]/', '', $harga);
+            $hargaVal = is_numeric($hargaNumeric) ? (float) $hargaNumeric : null;
+            if ($hargaVal === null) {
+                $errors[] = "Baris {$rowNumber}: harga tidak valid.";
+                continue;
+            }
+
+            // resolve or create kategori
+            $kategori_id = null;
+            if ($kategoriVal !== '') {
+                if (is_numeric($kategoriVal)) {
+                    $k = kategori::find((int)$kategoriVal);
+                    if ($k) {
+                        $kategori_id = $k->id;
+                    }
+                } else {
+                    $k = kategori::whereRaw('LOWER(kategori) = ?', [mb_strtolower($kategoriVal)])->first();
+                    if (!$k) {
+                        $k = kategori::create(['kategori' => $kategoriVal]);
+                    }
+                    $kategori_id = $k->id;
+                }
+            }
+
+            if (!$kategori_id) {
+                $errors[] = "Baris {$rowNumber}: kategori tidak valid atau kosong.";
+                continue;
+            }
+
+            // check duplicate by name (DB has unique constraint on nama_barang)
+            $existingByName = barang::whereRaw('LOWER(nama_barang) = ?', [mb_strtolower($nama)])->first();
+            if ($existingByName) {
+                $errors[] = "Baris {$rowNumber}: nama_barang '{$nama}' sudah ada (kode: {$existingByName->kode_barang}), dilewati.";
+                continue;
+            }
+
+            // generate kode if empty
+            if ($kode === '') {
+                $num++;
+                $kode = 'BR' . str_pad($num, 3, '0', STR_PAD_LEFT);
+            } else {
+                // ensure kode uniqueness
+                if (barang::where('kode_barang', $kode)->exists()) {
+                    $errors[] = "Baris {$rowNumber}: kode_barang '{$kode}' sudah ada, dilewati.";
+                    continue;
+                }
+            }
+
+            // insert barang
+            try {
+                $new = barang::create([
+                    'kode_barang' => $kode,
+                    'nama_barang' => $nama,
+                    'kategori_id' => $kategori_id,
+                    'satuan' => $satuan,
+                    'deskripsi' => $deskripsi,
+                    'harga' => $hargaVal,
+                ]);
+
+                // handle optional image: URL or existing storage/public path
+                if ($imageVal) {
+                    try {
+                        $storedPath = null;
+                        // remote URL
+                        if (preg_match('/^https?:\/\//i', $imageVal)) {
+                            $contents = @file_get_contents($imageVal);
+                            if ($contents !== false) {
+                                $ext = pathinfo(parse_url($imageVal, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
+                                $filename = 'images/barang/' . time() . '_' . Str::random(8) . '.' . $ext;
+                                Storage::disk('public')->put($filename, $contents);
+                                $storedPath = $filename;
+                            } else {
+                                $errors[] = "Baris {$rowNumber}: gagal mengambil image dari URL '{$imageVal}'.";
+                            }
+                        } else {
+                            // local path: check extracted ZIP dir first, then storage/app/public and public/ folders
+                            $foundLocal = false;
+                            if ($extractedDir) {
+                                $candidate = $extractedDir . DIRECTORY_SEPARATOR . ltrim($imageVal, '/\\');
+                                if (file_exists($candidate)) {
+                                    $ext = pathinfo($candidate, PATHINFO_EXTENSION) ?: 'jpg';
+                                    $filename = 'images/barang/' . time() . '_' . Str::random(8) . '.' . $ext;
+                                    Storage::disk('public')->put($filename, file_get_contents($candidate));
+                                    $storedPath = $filename;
+                                    $foundLocal = true;
+                                } else {
+                                    // try basename match inside extracted dir (images may be in subfolders)
+                                    $rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($extractedDir));
+                                    foreach ($rii as $f2) {
+                                        if ($f2->isFile() && strtolower($f2->getFilename()) === strtolower(basename($imageVal))) {
+                                            $candidate2 = $f2->getPathname();
+                                            $ext = pathinfo($candidate2, PATHINFO_EXTENSION) ?: 'jpg';
+                                            $filename = 'images/barang/' . time() . '_' . Str::random(8) . '.' . $ext;
+                                            Storage::disk('public')->put($filename, file_get_contents($candidate2));
+                                            $storedPath = $filename;
+                                            $foundLocal = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!$foundLocal) {
+                                $storagePath = storage_path('app/public/' . ltrim($imageVal, '/'));
+                                $publicPath = public_path(ltrim($imageVal, '/'));
+                                if (file_exists($storagePath)) {
+                                    $ext = pathinfo($storagePath, PATHINFO_EXTENSION) ?: 'jpg';
+                                    $filename = 'images/barang/' . time() . '_' . Str::random(8) . '.' . $ext;
+                                    Storage::disk('public')->put($filename, file_get_contents($storagePath));
+                                    $storedPath = $filename;
+                                    $foundLocal = true;
+                                } elseif (file_exists($publicPath)) {
+                                    $ext = pathinfo($publicPath, PATHINFO_EXTENSION) ?: 'jpg';
+                                    $filename = 'images/barang/' . time() . '_' . Str::random(8) . '.' . $ext;
+                                    Storage::disk('public')->put($filename, file_get_contents($publicPath));
+                                    $storedPath = $filename;
+                                    $foundLocal = true;
+                                }
+                            }
+
+                            if (!$foundLocal) {
+                                $errors[] = "Baris {$rowNumber}: file image lokal '{$imageVal}' tidak ditemukan.";
+                            }
+                        }
+
+                        if (!empty($storedPath)) {
+                            $new->image = $storedPath;
+                            $new->save();
+                        }
+                    } catch (\Exception $ex) {
+                        $errors[] = "Baris {$rowNumber}: gagal menyimpan image ({$ex->getMessage()}).";
+                    }
+                }
+
+                $imported++;
+            } catch (\Exception $e) {
+                $errors[] = "Baris {$rowNumber}: gagal disimpan ({$e->getMessage()}).";
+                // continue processing other rows
+            }
+        }
+
+        fclose($handle);
+
+        $msg = "Import selesai. Berhasil: {$imported}.";
+        if (count($errors) > 0) {
+            // store errors in session to be shown to user
+            // cleanup extracted dir if any
+            if (!empty($extractedDir) && is_dir($extractedDir)) {
+                $this->rrmdir($extractedDir);
+            }
+            return redirect()->back()->with('success', $msg)->with('import_errors', $errors);
+        }
+        // cleanup extracted dir if any
+        if (!empty($extractedDir) && is_dir($extractedDir)) {
+            $this->rrmdir($extractedDir);
+        }
+
+        return redirect()->back()->with('success', $msg);
+    }
+
+
+    // helper to recursively remove directory
+    private function rrmdir($dir)
+    {
+        if (!is_dir($dir)) return;
+        $items = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($items as $item) {
+            if ($item->isDir()) {
+                @rmdir($item->getPathname());
+            } else {
+                @unlink($item->getPathname());
+            }
+        }
+        @rmdir($dir);
     }
 
 }

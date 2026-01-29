@@ -33,17 +33,7 @@
             </div>
           </div>
 
-          <div class="row">
-            <div class="col mb-3">
-              <label class="form-label">Supplier</label>
-              <select name="id_supplier" class="form-control" required>
-                <option value="">-- Pilih Supplier --</option>
-                @foreach($suppliers as $s)
-                  <option value="{{ $s->id }}">{{ $s->nama_supplier }}</option>
-                @endforeach
-              </select>
-            </div>
-          </div>
+          
 
           <div class="row">
             <div class="col mb-3">
@@ -55,7 +45,7 @@
           <div class="row">
             <div class="col mb-3">
               <label class="form-label">Tanggal</label>
-              <input type="date" name="tanggal" class="form-control" required>
+              <input type="date" name="tanggal" class="form-control" required value="{{ old('tanggal', \Carbon\Carbon::now()->format('Y-m-d')) }}">
             </div>
           </div>
         </div>
@@ -75,10 +65,8 @@
 document.addEventListener('DOMContentLoaded', function () {
   var barangSel = document.querySelector('select[name="id_barang"]');
   var gudangSel = document.querySelector('select[name="kode_gudang"]');
-  var supplierSel = document.querySelector('select[name="id_supplier"]');
   if (barangSel) new Choices(barangSel, {searchEnabled: true, itemSelectText: ''});
   if (gudangSel) new Choices(gudangSel, {searchEnabled: true, itemSelectText: ''});
-  if (supplierSel) new Choices(supplierSel, {searchEnabled: true, itemSelectText: ''});
 
   var form = document.getElementById('formTambahBarangMasuk');
   if (form) {

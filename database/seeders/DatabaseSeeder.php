@@ -50,5 +50,13 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('admin123'),
             'role' => 'atasan'
         ]);
+
+        User::updateOrCreate([
+            'username' => 'nama'
+        ], [
+            'nama' => 'Approval',
+            'password' => Hash::make('nama123'),
+            'role' => 'approval'
+        ]);
     }
 }

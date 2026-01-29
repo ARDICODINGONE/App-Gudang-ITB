@@ -18,7 +18,7 @@
               <select id="edit_id_barang" name="id_barang" class="form-control" required>
                 <option value="">-- Pilih Barang --</option>
                 @foreach(
-                  \App\Models\barang::orderBy('nama_barang')->get() as $b
+                  \App\Models\Barang::orderBy('nama_barang')->get() as $b
                 )
                   <option value="{{ $b->id }}">{{ $b->nama_barang }}</option>
                 @endforeach
@@ -31,7 +31,7 @@
               <label class="form-label">Gudang</label>
               <select id="edit_kode_gudang" name="kode_gudang" class="form-control" required>
                 <option value="">-- Pilih Gudang --</option>
-                @foreach(\App\Models\gudang::orderBy('kode_gudang')->get() as $g)
+                @foreach(\App\Models\Gudang::orderBy('kode_gudang')->get() as $g)
                   <option value="{{ $g->kode_gudang }}">{{ $g->kode_gudang }} - {{ $g->nama_gudang }}</option>
                 @endforeach
               </select>

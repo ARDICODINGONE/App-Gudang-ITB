@@ -21,11 +21,11 @@ class barang_keluar extends Model
 
     public function barang(): BelongsTo
     {
-        return $this->belongsTo(barang::class, 'id_barang');
+        return $this->belongsTo(Barang::class, 'id_barang');
     }
 
     public function gudang(): BelongsTo
     {
-        return $this->belongsTo(gudang::class, 'kode_gudang', 'kode_gudang');
+        return $this->belongsTo(Gudang::class, 'kode_gudang', 'kode_gudang');
     }
 }

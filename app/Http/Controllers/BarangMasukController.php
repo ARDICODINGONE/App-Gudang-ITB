@@ -3,23 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\barang_masuk;
-use App\Models\barang;
-use App\Models\gudang;
-use App\Models\supplier;
-use App\Models\stok;
+use App\Models\BarangMasuk;
+use App\Models\Barang;
+use App\Models\Gudang;
+use App\Models\Stok;
 use Illuminate\Support\Facades\Auth;
 
 class BarangMasukController extends Controller
 {
     public function index()
     {
-        $items = barang_masuk::with(['barang', 'gudang', 'supplier', 'user'])->orderBy('tanggal', 'desc')->get();
-        $barangs = barang::orderBy('nama_barang')->get();
-        $gudangs = gudang::orderBy('kode_gudang')->get();
-        $suppliers = supplier::orderBy('nama_supplier')->get();
+        $items = BarangMasuk::with(['barang', 'gudang', 'user'])->orderBy('tanggal', 'desc')->get();
+        $barangs = Barang::orderBy('nama_barang')->get();
+        $gudangs = Gudang::orderBy('kode_gudang')->get();
 
-        return view('content.barang_masuk.index', compact('items', 'barangs', 'gudangs', 'suppliers'));
+        return view('content.barang_masuk.index', compact('items', 'barangs', 'gudangs'));
     }
 
     public function create(Request $request)
@@ -27,17 +25,16 @@ class BarangMasukController extends Controller
         $gudangKode = $request->query('gudang');
         $selectedBarang = $request->query('barang');
 
-        $barangs = barang::orderBy('nama_barang')->get();
-        $gudangs = gudang::orderBy('kode_gudang')->get();
-        $suppliers = supplier::orderBy('nama_supplier')->get();
+        $barangs = Barang::orderBy('nama_barang')->get();
+        $gudangs = Gudang::orderBy('kode_gudang')->get();
 
         // If accessed from a gudang page (gudang query present), show a full page form
         if ($gudangKode) {
-            return view('content.barang_masuk.create_page', compact('barangs', 'gudangs', 'suppliers', 'gudangKode', 'selectedBarang'));
+            return view('content.barang_masuk.create_page', compact('barangs', 'gudangs', 'gudangKode', 'selectedBarang'));
         }
 
         // Default: return the modal partial as before
-        return view('content.barang_masuk.create', compact('barangs', 'gudangs', 'suppliers'));
+        return view('content.barang_masuk.create', compact('barangs', 'gudangs'));
     }
 
     public function store(Request $request)
@@ -45,29 +42,27 @@ class BarangMasukController extends Controller
         $request->validate([
             'id_barang' => 'required|exists:barang,id',
             'kode_gudang' => 'required|exists:gudang,kode_gudang',
-            'id_supplier' => 'required|exists:supplier,id',
             'jumlah' => 'required|integer|min:1',
             'tanggal' => 'required|date',
         ]);
 
-        $created = barang_masuk::create([
+        $created = BarangMasuk::create([
             'id_barang' => $request->id_barang,
             'kode_gudang' => $request->kode_gudang,
-            'id_supplier' => $request->id_supplier,
             'jumlah' => $request->jumlah,
             'tanggal' => $request->tanggal,
             'id_users' => Auth::id() ?? 1,
         ]);
 
         // Update stok: increment existing stok for the gudang, or create a new stok record
-        $existing = stok::where('id_barang', $request->id_barang)
+        $existing = Stok::where('id_barang', $request->id_barang)
             ->where('kode_gudang', $request->kode_gudang)
             ->first();
 
         if ($existing) {
             $existing->increment('stok', (int) $request->jumlah);
         } else {
-            stok::create([
+            Stok::create([
                 'id_barang' => $request->id_barang,
                 'kode_gudang' => $request->kode_gudang,
                 'stok' => (int) $request->jumlah,
@@ -86,12 +81,11 @@ class BarangMasukController extends Controller
         return redirect()->route('barang-masuk-index')->with('success', 'Barang masuk berhasil ditambahkan!');
     }
 
-    public function update(Request $request, barang_masuk $barang_masuk)
+    public function update(Request $request, BarangMasuk $barang_masuk)
     {
         $request->validate([
             'id_barang' => 'required|exists:barang,id',
             'kode_gudang' => 'required|exists:gudang,kode_gudang',
-            'id_supplier' => 'required|exists:supplier,id',
             'jumlah' => 'required|integer|min:1',
             'tanggal' => 'required|date',
         ]);
@@ -99,7 +93,6 @@ class BarangMasukController extends Controller
         $barang_masuk->update([
             'id_barang' => $request->id_barang,
             'kode_gudang' => $request->kode_gudang,
-            'id_supplier' => $request->id_supplier,
             'jumlah' => $request->jumlah,
             'tanggal' => $request->tanggal,
         ]);
@@ -107,7 +100,7 @@ class BarangMasukController extends Controller
         return redirect()->route('barang-masuk-index')->with('success', 'Data barang masuk berhasil diperbarui!');
     }
 
-    public function destroy(barang_masuk $barang_masuk)
+    public function destroy(BarangMasuk $barang_masuk)
     {
         $barang_masuk->delete();
         return redirect()->route('barang-masuk-index')->with('success', 'Data barang masuk berhasil dihapus!');

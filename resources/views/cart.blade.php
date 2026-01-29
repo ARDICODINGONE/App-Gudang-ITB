@@ -71,9 +71,12 @@
                         <span class="fw-bold fs-5 text-primary" id="cart-total">Rp 0</span>
                     </div>
 
-                    <a href="{{ url('/checkout') }}" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm hover-top">
-                        Ajukan <i class="fa fa-chevron-right ms-2"></i>
-                    </a>
+                    <form id="form-ajukan" action="{{ route('pengajuan.fromCart') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm hover-top">
+                            Ajukan <i class="fa fa-chevron-right ms-2"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

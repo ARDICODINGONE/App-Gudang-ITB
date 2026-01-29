@@ -11,12 +11,13 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\BarangKeluarController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PengajuanController;
 
-use App\Models\kategori;
+use App\Models\Kategori;
 use App\Http\Controllers\CartController;
 
 Route::get('/shop', function () {
-    $kategoris = kategori::all();
+    $kategoris = Kategori::all();
     return view('shop', compact('kategoris'));
 });
 
@@ -61,6 +62,9 @@ Route::get('/barang/create', [BarangController::class, 'create'])->name('barang-
 Route::post('/barang', [BarangController::class, 'store'])->name('barang-store');
 Route::get('/barang/next-kode', [BarangController::class, 'nextKode'])->name('barang.nextKode');
 Route::get('/barang/check-duplicate', [BarangController::class, 'checkDuplicate'])->name('barang.checkDuplicate');
+// Import routes for barang
+Route::get('/barang/template', [BarangController::class, 'downloadTemplate'])->name('barang.template');
+Route::post('/barang/import', [BarangController::class, 'import'])->name('barang.import');
 Route::delete('/barang/{kode_barang}', [BarangController::class, 'destroy'])->name('barang.destroy');
 Route::put('/barang/{kode_barang}', [BarangController::class, 'update'])->name('barang.update');
 // Kategori
@@ -94,6 +98,15 @@ Route::get('/barang-keluar/create', [BarangKeluarController::class, 'create'])->
 Route::post('/barang-keluar/store', [BarangKeluarController::class, 'store'])->name('barang-keluar.store');
 Route::put('/barang-keluar/{barang_keluar}', [BarangKeluarController::class, 'update'])->name('barang-keluar.update');
 Route::delete('/barang-keluar/{barang_keluar}', [BarangKeluarController::class, 'destroy'])->name('barang-keluar.destroy');
+
+// Pengajuan
+Route::get('/pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
+Route::post('/pengajuan/from-cart', [PengajuanController::class, 'fromCart'])->name('pengajuan.fromCart');
+Route::post('/pengajuan', [PengajuanController::class, 'store'])->name('pengajuan.store');
+Route::get('/pengajuan/list', [PengajuanController::class, 'list'])->name('pengajuan.list');
+Route::get('/pengajuan/{id}/detail', [PengajuanController::class, 'show'])->name('pengajuan.show');
+Route::post('/pengajuan/{id}/approve', [PengajuanController::class, 'approve'])->name('pengajuan.approve');
+Route::post('/pengajuan/{id}/reject', [PengajuanController::class, 'reject'])->name('pengajuan.reject');
 
 // Notification
 Route::middleware('auth')->group(function () {

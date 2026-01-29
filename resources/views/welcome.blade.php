@@ -1,100 +1,139 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid px-0">
-        <div class="row g-0">
-            <div class="col-6 col-md-4 col-lg-2 border-start border-end wow fadeInUp" data-wow-delay="0.1s">
-                <div class="p-4">
-                    <div class="d-inline-flex align-items-center">
-                        <i class="fa fa-warehouse fa-2x text-primary"></i>
-                        <div class="ms-4">
-                            <a href="{{ url('/gudang') }}">
-                                <h6 class="text-uppercase mb-2">Gudang</h6>
-                            </a>
+    @auth
+    @if(auth()->user()->role === 'atasan' || auth()->user()->role === 'admin')
+    <div class="container-fluid bg-light py-3">
+        <div class="container">
+            <div class="row g-3 justify-content-center">
+                <!-- Gudang -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.1s">
+                    <a href="{{ url('/gudang') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-warehouse fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Gudang</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2 border-start border-end wow fadeInUp" data-wow-delay="0.1s">
-                <div class="p-4">
-                    <div class="d-inline-flex align-items-center">
-                        <i class="fa fa-boxes fa-2x text-primary"></i>
-                        <div class="ms-4">
-                            <a href="{{ url('/barang') }}">
-                                <h6 class="text-uppercase mb-2">Barang</h6>
-                            </a>
-
+                <!-- Barang -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.15s">
+                    <a href="{{ url('/barang') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-boxes fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Barang</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2 border-start border-end wow fadeInUp" data-wow-delay="0.1s">
-                <div class="p-4">
-                    <div class="d-inline-flex align-items-center">
-                        <i class="fa fa-download fa-2x text-primary"></i>
-                        <div class="ms-4">
-                            <a href="{{ url('/barang-masuk') }}">
-                                <h6 class="text-uppercase mb-2">Barang Masuk</h6>
-                            </a>
-
+                <!-- Barang Masuk -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.2s">
+                    <a href="{{ url('/barang-masuk') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-download fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Barang Masuk</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2 border-start border-end wow fadeInUp" data-wow-delay="0.1s">
-                <div class="p-4">
-                    <div class="d-inline-flex align-items-center">
-                        <i class="fa fa-bars fa-2x text-primary"></i>
-                        <div class="ms-4">
-                            <a href="{{ url('/kategori') }}">
-                                <h6 class="text-uppercase mb-2">Kategori</h6>
-                            </a>
-
+                <!-- Kategori -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.25s">
+                    <a href="{{ url('/kategori') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-bars fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Kategori</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2 border-start border-end wow fadeInUp" data-wow-delay="0.1s">
-                <div class="p-4">
-                    <div class="d-inline-flex align-items-center">
-                        <i class="fa fa-user-plus fa-2x text-primary"></i>
-                        <div class="ms-4">
-                            <a href="{{ url('/supplier') }}">
-                                <h6 class="text-uppercase mb-2">Supplier</h6>
-                            </a>
-
+                <!-- User -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.3s">
+                    <a href="{{ url('/user') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-users fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">User</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2 border-start border-end wow fadeInUp" data-wow-delay="0.1s">
-                <div class="p-4">
-                    <div class="d-inline-flex align-items-center">
-                        <i class="fa fa-users fa-2x text-primary"></i>
-                        <div class="ms-4">
-                            <a href="{{ url('/user') }}">
-                                <h6 class="text-uppercase mb-2">User</h6>
-                            </a>
-
+                <!-- Pengajuan -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.35s">
+                    <a href="{{ url('/pengajuan/list') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-paper-plane fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Pengajuan</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2 border-start border-end wow fadeInUp" data-wow-delay="0.1s">
-                <div class="p-4">
-                    <div class="d-inline-flex align-items-center">
-                        <i class="fa fa-file-alt fa-2x text-primary"></i>
-                        <div class="ms-4">
-                            <a href="{{ url('/shop') }}">
-                                <h6 class="text-uppercase mb-2">Laporan</h6>
-                            </a>
-
+                <!-- Laporan -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.4s">
+                    <a href="{{ url('/shop') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-file-alt fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Laporan</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+    @else
+    <div class="container-fluid bg-light py-3">
+        <div class="container">
+            <div class="row g-3 justify-content-center">
+                <!-- Gudang -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.1s">
+                    <a href="{{ url('/gudang') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-warehouse fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Gudang</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <!-- Pengajuan -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.15s">
+                    <a href="{{ url('/pengajuan/list') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-paper-plane fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Pengajuan</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <!-- Laporan -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.2s">
+                    <a href="{{ url('/shop') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-file-alt fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Laporan</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    @endauth
+
+    <style>
+        .menu-card {
+            cursor: pointer;
+        }
+    </style>
     <div class="container-fluid px-0">
         <div class="row justify-content-center mb-5 mx-0">
             <div class="col-12 col-lg-10 px-0">
@@ -117,6 +156,7 @@
                         <p class="small text-muted mb-0">
                             Gudang dapat diganti kembali melalui menu pengaturan.
                         </p>
+                        
                     </div>
                 </div>
             </div>
@@ -126,8 +166,8 @@
         <div class="container">
             <div class="row g-4">
                 @php
-                    use App\Models\gudang;
-                    $allGudang = gudang::all();
+                    use App\Models\Gudang;
+                    $allGudang = Gudang::all();
                 @endphp
 
                 @forelse($allGudang as $g)

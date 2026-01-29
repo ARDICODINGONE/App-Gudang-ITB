@@ -10,12 +10,24 @@
       <div>
         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createBarangModal"><i
             class="icon-base ri ri-add-line me-1"></i>Tambah Barang</button>
+        <button type="button" class="btn btn-sm btn-secondary ms-2" data-bs-toggle="modal" data-bs-target="#importBarangModal"><i class="ri-upload-line me-1"></i>Import</button>
       </div>
     </h5>
 
     <div class="card-body">
       @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
+      @endif
+
+      @if(session('import_errors'))
+        <div class="alert alert-warning">
+          <strong>Beberapa baris gagal diimpor:</strong>
+          <ul class="mb-0">
+            @foreach(session('import_errors') as $err)
+              <li>{{ $err }}</li>
+            @endforeach
+          </ul>
+        </div>
       @endif
 
       <div class="table-responsive text-nowrap">
@@ -86,6 +98,7 @@
 
   @include('content.barang.delete')
   @include('content.barang.create')
+  @include('content.barang.import')
   @include('content.barang.update')
 
   <!-- Create Modal -->
@@ -97,6 +110,10 @@
         @if ($errors->any())
           var myModal = new bootstrap.Modal(document.getElementById('createBarangModal'));
           myModal.show();
+        @endif
+        @if(session('import_errors'))
+          var importModal = new bootstrap.Modal(document.getElementById('importBarangModal'));
+          importModal.show();
         @endif
       });
     </script>

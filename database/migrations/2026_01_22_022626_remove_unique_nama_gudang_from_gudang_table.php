@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('gudang', function (Blueprint $table) {
-            $table->string('kode_gudang')->primary();
-            $table->string('nama_gudang');
-            $table->string('lokasi')->nullable();
-            $table->string('images')->nullable();
-            $table->timestamps();
+        Schema::table('gudang', function (Blueprint $table) {
+            $table->dropUnique('gudang_nama_gudang_unique');
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('gudang', function (Blueprint $table) {
+            $table->unique('nama_gudang');
+        });
     }
 };

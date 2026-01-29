@@ -29,7 +29,6 @@
                             <th>No</th>
                             <th>Barang</th>
                             <th>Gudang</th>
-                            <th>Supplier</th>
                             <th>Jumlah</th>
                             <th>Tanggal</th>
                             <th>User</th>
@@ -42,15 +41,15 @@
                                 <td><input type="checkbox" class="row-check" value="{{ $item->id }}"></td>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ optional($item->barang)->nama_barang }}</td>
-                                <td>{{ optional($item->gudang)->kode_gudang }}</td>
-                                <td>{{ optional($item->supplier)->nama_supplier }}</td>
+                                <td>{{ optional($item->gudang)->nama_gudang }}</td>
+                            
                                 <td>{{ $item->jumlah }}</td>
                                 <td>{{ $item->tanggal }}</td>
-                                <td>{{ optional($item->user)->nama ?? optional($item->user)->username }}</td>
+                                <td>{{ auth()->user()->nama ?? auth()->user()->username }}</td>
                                 <td>
                                     <div class="d-flex">
                                         <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
-                                            onclick='editBarangMasuk({!! json_encode(route("barang-masuk.update", $item->id)) !!}, {!! json_encode($item->id) !!}, {!! json_encode($item->id_barang) !!}, {!! json_encode($item->kode_gudang) !!}, {!! json_encode($item->id_supplier) !!}, {!! json_encode($item->jumlah) !!}, {!! json_encode($item->tanggal) !!})'>
+                                            onclick='editBarangMasuk({!! json_encode(route("barang-masuk.update", $item->id)) !!}, {!! json_encode($item->id) !!}, {!! json_encode($item->id_barang) !!}, {!! json_encode($item->kode_gudang) !!}, {!! json_encode($item->jumlah) !!}, {!! json_encode($item->tanggal) !!})'>
                                             <i class="ri-pencil-line me-1"></i> Edit
                                         </a>
                                         <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
@@ -64,7 +63,7 @@
 
                         @if ($items->isEmpty())
                             <tr>
-                                <td colspan="9" class="text-center">Belum ada data barang masuk.</td>
+                                <td colspan="8" class="text-center">Belum ada data barang masuk.</td>
                             </tr>
                         @endif
                     </tbody>
@@ -148,11 +147,10 @@
             myModal.show();
         }
 
-        function editBarangMasuk(actionUrl, id, id_barang, kode_gudang, id_supplier, jumlah, tanggal) {
+        function editBarangMasuk(actionUrl, id, id_barang, kode_gudang, jumlah, tanggal) {
             document.getElementById('edit_id_bm').value = id;
             document.getElementById('edit_id_barang').value = id_barang;
             document.getElementById('edit_kode_gudang').value = kode_gudang;
-            document.getElementById('edit_id_supplier').value = id_supplier;
             document.getElementById('edit_jumlah').value = jumlah;
             document.getElementById('edit_tanggal').value = tanggal;
             document.getElementById('formEditBarangMasuk').action = actionUrl;

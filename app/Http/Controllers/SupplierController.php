@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\supplier;
+use App\Models\Supplier;
 
 class SupplierController extends Controller
 {
     public function index()
     {
-        $suppliers = supplier::orderBy('nama_supplier')->get();
+        $suppliers = Supplier::orderBy('nama_supplier')->get();
         return view('content.supplier.index', compact('suppliers'));
     }
 
@@ -24,7 +24,7 @@ class SupplierController extends Controller
             'no_telp.unique' => 'Nomor telepon sudah terdaftar.',
         ]);
 
-        $new = supplier::create([
+        $new = Supplier::create([
             'nama_supplier' => $request->nama_supplier,
             'alamat' => $request->alamat,
             'no_telp' => $request->no_telp,

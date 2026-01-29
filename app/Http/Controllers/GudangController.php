@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Gudang; // PascalCase
-use App\Models\barang;
-use App\Models\kategori;
-use App\Models\stok;
-use App\Models\supplier;
+use App\Models\Gudang;
+use App\Models\Barang;
+use App\Models\Kategori;
+use App\Models\Stok;
+use App\Models\Supplier;
 use Illuminate\Support\Facades\Storage;
 
 class GudangController extends Controller
@@ -18,18 +18,18 @@ class GudangController extends Controller
         $kode = $request->query('kode');
         if ($kode) {
             $gudangKode = $kode;
-            $kategoris = kategori::all();
+            $kategoris = Kategori::all();
 
             // Get barang that have stok records for this gudang
-            $barangs = barang::with(['kategori', 'stok' => function($q) use ($kode) {
+            $barangs = Barang::with(['kategori', 'stok' => function($q) use ($kode) {
                 $q->where('kode_gudang', $kode);
             }])->whereHas('stok', function ($q) use ($kode) {
                 $q->where('kode_gudang', $kode);
             })->orderBy('nama_barang')->get();
             // also pass the full barang index so the "Pilih Barang" modal shows all items
-            $allBarangs = barang::orderBy('nama_barang')->get();
+            $allBarangs = Barang::orderBy('nama_barang')->get();
             $gudangs = Gudang::orderBy('kode_gudang')->get();
-            $suppliers = supplier::orderBy('nama_supplier')->get();
+            $suppliers = Supplier::orderBy('nama_supplier')->get();
             return view('shop', compact('barangs', 'kategoris', 'gudangKode', 'gudangs', 'suppliers', 'allBarangs'));
         }
 

@@ -133,26 +133,28 @@
                                     </div>
 
                                     <!-- Action Buttons -->
-                                    <div class="d-flex gap-2 mb-4">
-                                        @if (isset($product->stock) && $product->stock > 0)
-                                            <button type="button"
-                                                class="btn btn-outline-primary btn-sm rounded-0 px-4 py-2 add-to-cart"
-                                                data-product-id="{{ $product->id ?? 1 }}"
-                                                data-product-name="{{ $product->name ?? 'Smart Camera' }}"
-                                                data-product-price="{{ $product->discount_price ?? ($product->price ?? 3.35) }}">
-                                                <i class="fa fa-shopping-cart me-2"></i> Add to cart
-                                            </button>
-                                            <button type="button"
-                                                class="btn btn-outline-secondary btn-sm rounded-0 px-3 py-2">
-                                                <i class="fa fa-heart"></i>
-                                            </button>
-                                        @else
-                                            <button type="button"
-                                                class="btn btn-outline-secondary btn-sm rounded-0 px-4 py-2" disabled>
-                                                <i class="fa fa-shopping-cart me-2"></i> Out of Stock
-                                            </button>
-                                        @endif
-                                    </div>
+                                    @auth
+                                        <div class="d-flex gap-2 mb-4">
+                                            @if (isset($product->stock) && $product->stock > 0)
+                                                <button type="button"
+                                                    class="btn btn-outline-primary btn-sm rounded-0 px-4 py-2 add-to-cart"
+                                                    data-product-id="{{ $product->id ?? 1 }}"
+                                                    data-product-name="{{ $product->name ?? 'Smart Camera' }}"
+                                                    data-product-price="{{ $product->discount_price ?? ($product->price ?? 3.35) }}">
+                                                    <i class="fa fa-shopping-cart me-2"></i> Add to cart
+                                                </button>
+                                                <button type="button"
+                                                    class="btn btn-outline-secondary btn-sm rounded-0 px-3 py-2">
+                                                    <i class="fa fa-heart"></i>
+                                                </button>
+                                            @else
+                                                <button type="button"
+                                                    class="btn btn-outline-secondary btn-sm rounded-0 px-4 py-2" disabled>
+                                                    <i class="fa fa-shopping-cart me-2"></i> Out of Stock
+                                                </button>
+                                            @endif
+                                        </div>
+                                    @endauth
 
                                     <!-- Product Meta -->
                                     <div class="border-top pt-3">

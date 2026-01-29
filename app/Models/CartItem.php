@@ -26,6 +26,6 @@ class CartItem extends Model
 
 	public function barang(): BelongsTo
 	{
-		return $this->belongsTo(barang::class, 'barang_id');
+		return $this->belongsTo(Barang::class, 'barang_id');
 	}
 }
