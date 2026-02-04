@@ -10,6 +10,12 @@
                 <button type="button" class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modalTambahBarangMasuk">
                     <i class="ri ri-add-line me-1"></i>Tambah Barang Masuk
                 </button>
+                <button type="button" class="btn btn-sm btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#importBarangMasukModal">
+                    <i class="ri-upload-line me-1"></i>Import
+                </button>
+                <a href="{{ route('barang-masuk.export') }}" class="btn btn-sm btn-success me-2">
+                    <i class="ri-download-line me-1"></i>Export
+                </a>
                 <button id="btnBulkDelete" type="button" class="btn btn-sm btn-danger" onclick="konfirmasiHapusMultiple()" disabled>
                     <i class="ri ri-delete-bin-6-line me-1"></i>Hapus Terpilih
                 </button>
@@ -19,6 +25,17 @@
         <div class="card-body">
             @if (session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+
+            @if(session('import_errors'))
+                <div class="alert alert-warning">
+                    <strong>Beberapa baris gagal diimpor:</strong>
+                    <ul class="mb-0">
+                        @foreach(session('import_errors') as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
 
             <div class="table-responsive text-nowrap">
@@ -75,6 +92,7 @@
     @include('content.barang_masuk.create')
     @include('content.barang_masuk.delete')
     @include('content.barang_masuk.update')
+    @include('content.barang_masuk.import')
 
         <!-- Bulk delete modal -->
         <div class="modal fade" id="modalHapusMultipleBarangMasuk" tabindex="-1" aria-hidden="true">

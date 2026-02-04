@@ -11,6 +11,7 @@
         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createBarangModal"><i
             class="icon-base ri ri-add-line me-1"></i>Tambah Barang</button>
         <button type="button" class="btn btn-sm btn-secondary ms-2" data-bs-toggle="modal" data-bs-target="#importBarangModal"><i class="ri-upload-line me-1"></i>Import</button>
+        <a href="{{ route('barang.export') }}" class="btn btn-sm btn-success ms-2"><i class="ri-download-line me-1"></i>Export</a>
       </div>
     </h5>
 

@@ -15,7 +15,7 @@
               <select name="id_barang" class="form-control" required>
                 <option value="">-- Pilih Barang --</option>
                 @foreach($barangs as $b)
-                  <option value="{{ $b->id }}">{{ $b->nama_barang }}</option>
+                  <option value="{{ $b->id }}">{{ $b->nama_barang }} - {{ $b->deskripsi }}</option>
                 @endforeach
               </select>
             </div>

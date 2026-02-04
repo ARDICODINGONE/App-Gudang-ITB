@@ -23,6 +23,7 @@
           <thead>
             <tr>
               <th>No</th>
+              <th>ID</th>
               <th>Nama</th>
               <th>Username</th>
               <th>Password</th>
@@ -34,6 +35,7 @@
             @foreach ($users as $user)
               <tr>
                 <td>{{ $loop->iteration }}</td>
+              <td>{{ $user->id }}</td>
               <td>{{ $user->nama }}</td>
               <td>{{ $user->username }}</td>
               {{-- PASSWORD (HASH) --}}

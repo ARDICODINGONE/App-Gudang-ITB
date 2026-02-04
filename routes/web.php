@@ -64,6 +64,7 @@ Route::get('/barang/next-kode', [BarangController::class, 'nextKode'])->name('ba
 Route::get('/barang/check-duplicate', [BarangController::class, 'checkDuplicate'])->name('barang.checkDuplicate');
 // Import routes for barang
 Route::get('/barang/template', [BarangController::class, 'downloadTemplate'])->name('barang.template');
+Route::get('/barang/export', [BarangController::class, 'export'])->name('barang.export');
 Route::post('/barang/import', [BarangController::class, 'import'])->name('barang.import');
 Route::delete('/barang/{kode_barang}', [BarangController::class, 'destroy'])->name('barang.destroy');
 Route::put('/barang/{kode_barang}', [BarangController::class, 'update'])->name('barang.update');
@@ -91,6 +92,10 @@ Route::put('/barang-masuk/{barang_masuk}', [BarangMasukController::class, 'updat
 Route::delete('/barang-masuk/{barang_masuk}', [BarangMasukController::class, 'destroy'])->name('barang-masuk.destroy');
 // Bulk delete for barang masuk
 Route::post('/barang-masuk/bulk-delete', [BarangMasukController::class, 'bulkDestroy'])->name('barang-masuk.bulkDestroy');
+// Import routes for barang masuk
+Route::get('/barang-masuk/template', [BarangMasukController::class, 'downloadTemplate'])->name('barang-masuk.template');
+Route::get('/barang-masuk/export', [BarangMasukController::class, 'export'])->name('barang-masuk.export');
+Route::post('/barang-masuk/import', [BarangMasukController::class, 'import'])->name('barang-masuk.import');
 
 // Barang Keluar
 Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar-index');

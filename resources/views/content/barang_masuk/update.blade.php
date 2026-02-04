@@ -47,7 +47,7 @@
           <div class="row">
             <div class="col mb-3">
               <label class="form-label">Jumlah</label>
-              <input type="number" id="edit_jumlah" name="jumlah" class="form-control" min="1" required>
+              <input type="number" id="edit_jumlah" name="jumlah" class="form-control" min="1" readonly required>
             </div>
           </div>
 

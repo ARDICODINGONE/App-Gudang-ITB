@@ -132,7 +132,7 @@
                             <img src="${item.image || '/img/product-1.png'}" class="cart-img me-3">
                             <div>
                                 <div class="product-name">${item.name}</div>
-                                <span class="product-spec">${item.kode || 'ELEC'}</span>
+                                <span class="product-gudang">Dari: ${item.nama_gudang}</span>
                             </div>
                         </div>
                     </td>
@@ -140,9 +140,9 @@
                         ${formatRupiah(item.price)}
                     </td>
                     <td>
-                            <div class="qty-container mx-auto">
+                            <div class="qty-container mx-auto" title="Max: ${item.max_qty}">
                             <button class="qty-btn btn-decr" data-id="${item.id}"><i class="fa fa-minus fa-xs"></i></button>
-                            <input type="number" min="1" class="qty-input" data-id="${item.id}" value="${item.qty}" data-prev="${item.qty}" />
+                            <input type="number" min="1" max="${item.max_qty}" class="qty-input" data-id="${item.id}" value="${item.qty}" data-prev="${item.qty}" data-max="${item.max_qty}" title="Max tersedia: ${item.max_qty}" />
                             <button class="qty-btn btn-incr" data-id="${item.id}"><i class="fa fa-plus fa-xs"></i></button>
                         </div>
                     </td>
@@ -185,8 +185,9 @@
             }, 700);
             input.addEventListener('input', onInput);
             input.addEventListener('blur', (e) => {
-                // ensure at least 1 and trigger immediate update on blur
-                const v = Math.max(1, parseInt(e.target.value) || 1);
+                // ensure at least 1 and not exceeding max, trigger immediate update on blur
+                const maxQty = parseInt(e.target.dataset.max) || Infinity;
+                const v = Math.max(1, Math.min(parseInt(e.target.value) || 1, maxQty));
                 e.target.value = v;
                 changeQtyFromInput(id, v, e.target);
             });
@@ -238,7 +239,8 @@
         const row = btnIncr.closest('tr');
         const qtyEl = row.querySelector('.qty-input');
         const curQty = parseInt(qtyEl.value ?? qtyEl.textContent) || 0;
-        const newQty = Math.max(1, curQty + delta);
+        const maxQty = parseInt(qtyEl.dataset.max) || Infinity;
+        const newQty = Math.max(1, Math.min(curQty + delta, maxQty));
         if (newQty === curQty) return;
 
         // read price from 2nd column
@@ -299,7 +301,8 @@
     // handle updates triggered by typing into the number input
     async function changeQtyFromInput(itemId, newQty, inputEl) {
         const prevQty = parseInt(inputEl.dataset.prev) || 0;
-        newQty = Math.max(1, parseInt(newQty) || 1);
+        const maxQty = parseInt(inputEl.dataset.max) || Infinity;
+        newQty = Math.max(1, Math.min(parseInt(newQty) || 1, maxQty));
         if (newQty === prevQty) { inputEl.value = prevQty; return; }
 
         const row = inputEl.closest('tr');
@@ -372,6 +375,15 @@
         padding: 1px 6px;
         border-radius: 4px;
     }
+    .product-gudang {
+        font-size: 11px;
+        color: #666;
+        font-weight: 500;
+        background: #e7f3ff;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+    }
 
     /* Kontrol Quantity */
     .qty-container {
@@ -382,6 +394,9 @@
         width: fit-content;
         overflow: hidden;
         background: #fff;
+    }
+    .qty-container:hover {
+        border-color: #0d6efd;
     }
     .qty-btn {
         padding: 5px 10px;

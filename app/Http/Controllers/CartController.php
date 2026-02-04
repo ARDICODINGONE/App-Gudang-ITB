@@ -25,14 +25,29 @@ class CartController extends Controller
     public function items(Request $request)
     {
         $cart = $this->findOrCreateCart($request);
-        $items = $cart->items()->with('barang')->get()->map(function ($it) {
+        $items = $cart->items()->with('barang.stok')->get()->map(function ($it) {
+            // Calculate total stock for this barang across all gudang
+            $totalStock = $it->barang->stok()->sum('stok') ?? 0;
+            
+            // Get list of gudang names where this barang is in stock
+            $gudangList = $it->barang->stok()
+                ->where('stok', '>', 0)
+                ->with('gudang')
+                ->get()
+                ->map(function ($s) {
+                    return $s->gudang->nama_gudang ?? null;
+                })
+                ->filter()
+                ->toArray();
+
             return [
                 'id' => $it->id,
                 'barang_id' => $it->barang_id,
                 'name' => $it->barang->nama_barang ?? null,
-                'kode' => $it->barang->kode_barang ?? null,
                 'price' => $it->price ?? $it->barang->harga ?? 0,
                 'qty' => $it->quantity,
+                'max_qty' => $totalStock,
+                'gudang_list' => implode(', ', $gudangList) ?: 'Tidak ada stok',
                 'image' => $it->barang->image ? asset('storage/' . $it->barang->image) : asset('img/product-1.png'),
             ];
         });
@@ -64,21 +79,30 @@ class CartController extends Controller
         ]);
 
         $cart = $this->findOrCreateCart($request);
+        $barang = Barang::find($data['barang_id']);
+        
+        // Get total available stock
+        $totalStock = $barang->stok()->sum('stok') ?? 0;
+        $requestedQty = $data['quantity'] ?? 1;
 
         $item = $cart->items()->where('barang_id', $data['barang_id'])->first();
         if ($item) {
-            $item->quantity += $data['quantity'] ?? 1;
+            $newQty = min($item->quantity + $requestedQty, $totalStock);
+            $item->quantity = $newQty;
             $item->save();
         } else {
-            $barang = barang::find($data['barang_id']);
+            $newQty = min($requestedQty, $totalStock);
             $cart->items()->create([
                 'barang_id' => $data['barang_id'],
-                'quantity' => $data['quantity'] ?? 1,
+                'quantity' => $newQty,
                 'price' => $barang->harga ?? 0,
             ]);
         }
 
-        return response()->json(['ok' => true]);
+        return response()->json([
+            'ok' => true,
+            'max_qty' => $totalStock
+        ]);
     }
 
     public function updateItem(Request $request, $id)
@@ -88,10 +112,21 @@ class CartController extends Controller
         ]);
 
         $item = CartItem::findOrFail($id);
-        $item->quantity = $data['quantity'];
+        
+        // Get total available stock for this barang
+        $totalStock = $item->barang->stok()->sum('stok') ?? 0;
+        
+        // Ensure quantity doesn't exceed available stock
+        $quantity = min($data['quantity'], $totalStock);
+        
+        $item->quantity = $quantity;
         $item->save();
 
-        return response()->json(['ok' => true]);
+        return response()->json([
+            'ok' => true,
+            'quantity' => $quantity,
+            'max_qty' => $totalStock
+        ]);
     }
 
     public function removeItem(Request $request, $id)
