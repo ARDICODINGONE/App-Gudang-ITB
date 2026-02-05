@@ -208,7 +208,8 @@ class BarangController extends Controller
                 'image' => $b->image ? asset('storage/' . $b->image) : asset('img/product-1.png'),
                 'satuan' => $b->satuan,
                 'deskripsi' => $b->deskripsi,
-                'kategori' => $b->kategori ? $b->kategori->nama_kategori ?? null : null,
+                'kategori' => $b->kategori ? ($b->kategori->kategori ?? null) : null,
+                'kategori_slug' => $b->kategori ? \Illuminate\Support\Str::slug($b->kategori->kategori) : null,
                 // When filtering by gudang, include total_masuk as 'stok' so shop shows quantities based on barang_masuk
                 'stok' => $stokVal,
             ];

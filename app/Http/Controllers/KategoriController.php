@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kategori;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class KategoriController extends Controller
@@ -12,6 +13,21 @@ class KategoriController extends Controller
     {
         $kategoris = Kategori::orderBy('kategori', 'asc')->get();
         return view('content.kategori.index', compact('kategoris'));
+    }
+
+    // API endpoint untuk mengambil kategori sebagai JSON
+    public function apiIndex()
+    {
+        $kategoris = Kategori::orderBy('kategori', 'asc')->get();
+        $data = $kategoris->map(function ($k) {
+            return [
+                'id' => $k->id,
+                'name' => $k->kategori,
+                'nama_kategori' => $k->kategori,
+                'slug' => Str::slug($k->kategori),
+            ];
+        });
+        return response()->json($data);
     }
 
     // SIMPAN DATA

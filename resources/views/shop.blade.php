@@ -27,29 +27,13 @@
             <p class="wow fadeInUp" data-wow-delay="0.2s">selamat datang di halaman gudang {{ $gudangName }}, silakan pilih barangnya</p>
         </div>
         
-        <div class="category-scroller">
-            @php
-                $categories = [
-                    ['icon' => 'fa-th-large', 'name' => 'All'], // Tambahan untuk reset filter
-                    ['icon' => 'fa-laptop', 'name' => 'Laptop'],
-                    ['icon' => 'fa-mobile-alt', 'name' => 'Phone'],
-                    ['icon' => 'fa-camera', 'name' => 'Camera'],
-                    ['icon' => 'fa-headphones', 'name' => 'Audio'],
-                    ['icon' => 'fa-gamepad', 'name' => 'Gaming'],
-                    ['icon' => 'fa-tv', 'name' => 'TV'],
-                    ['icon' => 'fa-clock', 'name' => 'Watch'],
-                    ['icon' => 'fa-print', 'name' => 'Printer'],
-                ];
-            @endphp
-
-            @foreach ($categories as $cat)
-                <a href="javascript:void(0)" class="cat-item filter-category" data-category="{{ $cat['name'] }}">
-                    <div class="cat-bubble">
-                        <i class="fa {{ $cat['icon'] }}"></i>
-                    </div>
-                    <span class="cat-name">{{ $cat['name'] }}</span>
-                </a>
-            @endforeach
+        <div class="category-filter-container mb-4">
+            <div class="category-chips">
+                <button class="category-chip active" data-category="all">
+                    <i class="fa fa-th-large"></i> Semua
+                </button>
+                <div id="dynamic-categories"></div>
+            </div>
         </div>
 
         <div class="input-group mb-4 shadow-sm">
@@ -72,11 +56,7 @@
 
         <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
             <div class="pagination d-flex justify-content-center mt-5">
-                <a href="#" class="rounded">&laquo;</a>
-                @for ($i = 1; $i <= 6; $i++)
-                    <a href="#" class="{{ $i == 1 ? 'active' : '' }} rounded">{{ $i }}</a>
-                @endfor
-                <a href="#" class="rounded">&raquo;</a>
+                <!-- Pagination akan di-generate secara dinamis -->
             </div>
         </div>
     </div>
@@ -84,35 +64,67 @@
     <script>
         // State & Config
         let _shopProducts = [];
+        let _displayedProducts = [];
         let currentGudang = "{{ isset($gudangKode) ? $gudangKode : '' }}";
         let currentGudangCode = currentGudang;
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = 30;
+
+        // --- FUNGSI LOAD KATEGORI ---
+        async function loadCategories() {
+            try {
+                const res = await fetch('/shop/categories');
+                if (!res.ok) throw new Error('Network error');
+                const categories = await res.json();
+                const categoriesContainer = document.getElementById('dynamic-categories');
+                categoriesContainer.innerHTML = '';
+                
+                categories.forEach(cat => {
+                    const chip = document.createElement('button');
+                    chip.className = 'category-chip';
+                    chip.dataset.category = (cat.slug || cat.name).toString().toLowerCase();
+                    chip.innerHTML = `<i class="fa fa-tag"></i> ${cat.name}`;
+                    
+                    chip.addEventListener('click', function() {
+                        filterByCategory(this.dataset.category);
+                        document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+                    
+                    categoriesContainer.appendChild(chip);
+                });
+            } catch (err) {
+                console.error('Gagal memuat kategori:', err);
+            }
+        }
 
         // --- FUNGSI PENCARIAN & FILTER ---
         function runMainFilter() {
             const searchTerm = document.getElementById('main-search').value.toLowerCase().trim();
-            const cards = document.querySelectorAll('.product-grid .product-card');
-
-            cards.forEach(card => {
-                const name = card.dataset.name ? card.dataset.name.toLowerCase() : '';
-                const kode = card.dataset.kode ? card.dataset.kode.toLowerCase() : '';
-                
-                if (name.includes(searchTerm) || kode.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+            _displayedProducts = _shopProducts.filter(p => {
+                const name = (p.name || p.nama_barang || '').toLowerCase();
+                const kode = (p.kode || p.kode_barang || '').toLowerCase();
+                return name.includes(searchTerm) || kode.includes(searchTerm);
             });
+            
+            currentPage = 1;
+            displayProductsPage();
         }
 
         function filterByCategory(categoryName) {
-            const cards = document.querySelectorAll('.product-grid .product-card');
-            cards.forEach(card => {
-                if (categoryName === 'All' || card.dataset.category === categoryName) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+            if (!categoryName) return;
+            if (categoryName === 'all' || categoryName === 'All') {
+                _displayedProducts = _shopProducts;
+            } else {
+                const target = categoryName.toString().toLowerCase().trim();
+                _displayedProducts = _shopProducts.filter(p => {
+                    const slug = (p.kategori_slug || (p.kategori || '')).toString().toLowerCase().trim();
+                    return slug === target;
+                });
+            }
+
+            currentPage = 1;
+            displayProductsPage();
         }
 
         // --- FUNGSI LOAD DATA ---
@@ -126,10 +138,10 @@
                 if (!res.ok) throw new Error('Network error');
                 const products = await res.json();
                 _shopProducts = products;
+                _displayedProducts = products;
+                currentPage = 1;
 
-                const grid = document.querySelector('.product-grid');
-                grid.innerHTML = '';
-                appendProductsToGrid(products);
+                displayProductsPage();
             } catch (err) {
                 console.error('Gagal memuat produk:', err);
                 alert('Gagal memuat produk dari server.');
@@ -148,7 +160,7 @@
             card.dataset.name = p.name || p.nama_barang || '';
             card.dataset.image = p.image || '';
             card.dataset.price = p.price || p.harga || '';
-            card.dataset.category = p.category || '';
+            card.dataset.category = p.kategori || p.category || '';
             
             const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
             
@@ -194,9 +206,87 @@
             return card;
         }
 
-        function appendProductsToGrid(products) {
+        function appendProductsToGrid() {
             const grid = document.querySelector('.product-grid');
-            products.forEach(p => grid.appendChild(createProductCard(p)));
+            grid.innerHTML = '';
+            
+            const totalPages = Math.ceil(_displayedProducts.length / ITEMS_PER_PAGE);
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const paginatedProducts = _displayedProducts.slice(startIndex, endIndex);
+            
+            paginatedProducts.forEach(p => grid.appendChild(createProductCard(p)));
+            renderPagination(totalPages);
+        }
+
+        function displayProductsPage() {
+            const grid = document.querySelector('.product-grid');
+            grid.innerHTML = '';
+            
+            const totalPages = Math.ceil(_displayedProducts.length / ITEMS_PER_PAGE);
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const paginatedProducts = _displayedProducts.slice(startIndex, endIndex);
+            
+            if (paginatedProducts.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">Tidak ada produk yang sesuai</div>';
+            } else {
+                paginatedProducts.forEach(p => grid.appendChild(createProductCard(p)));
+            }
+            
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const paginationContainer = document.querySelector('.pagination');
+            paginationContainer.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            // Previous button
+            const prevBtn = document.createElement('a');
+            prevBtn.href = '#';
+            prevBtn.className = 'rounded';
+            prevBtn.innerHTML = '&laquo;';
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    appendProductsToGrid();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            paginationContainer.appendChild(prevBtn);
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLink = document.createElement('a');
+                pageLink.href = '#';
+                pageLink.className = `rounded ${i === currentPage ? 'active' : ''}`;
+                pageLink.textContent = i;
+                pageLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = i;
+                    appendProductsToGrid();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                paginationContainer.appendChild(pageLink);
+            }
+            
+            // Next button
+            const nextBtn = document.createElement('a');
+            nextBtn.href = '#';
+            nextBtn.className = 'rounded';
+            nextBtn.innerHTML = '&raquo;';
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    appendProductsToGrid();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            paginationContainer.appendChild(nextBtn);
         }
 
         // --- KERANJANG (LOCAL STORAGE) ---
@@ -313,18 +403,22 @@
 
         // --- EVENT INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', function() {
+            // Load categories from API
+            loadCategories();
+
             // Search & Category Events
             document.getElementById('main-search').addEventListener('input', runMainFilter);
             document.getElementById('btn-search').addEventListener('click', runMainFilter);
 
-            document.querySelectorAll('.filter-category').forEach(el => {
-                el.addEventListener('click', function() {
-                    filterByCategory(this.dataset.category);
-                    // Visual active state
-                    document.querySelectorAll('.filter-category').forEach(c => c.classList.remove('active'));
+            // Event listener untuk tombol "Semua"
+            const allBtn = document.querySelector('[data-category="all"]');
+            if (allBtn) {
+                allBtn.addEventListener('click', function() {
+                    filterByCategory('all');
+                    document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
                     this.classList.add('active');
                 });
-            });
+            }
 
             // picker and add-product controls removed
 
@@ -361,7 +455,71 @@
     </script>
 
     <style>
-        .cat-item.active .cat-bubble { background-color: #0d6efd; color: white; }
+        /* Category Filter Styles */
+        /* Compact horizontal category chips (minimal vertical space) */
+        .category-filter-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 8px 0 6px 0;
+        }
+
+        .category-chips {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            overflow-x: auto;
+            padding: 6px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+            max-width: 100%;
+            white-space: nowrap;
+        }
+
+        /* hide scrollbar (webkit) */
+        .category-chips::-webkit-scrollbar { height: 6px; }
+        .category-chips::-webkit-scrollbar-track { background: transparent; }
+        .category-chips::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 10px; }
+
+        .category-chip {
+            padding: 6px 12px;
+            border: 1px solid #e3e3e3;
+            background-color: white;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            transition: all 0.18s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 48px;
+            height: 36px;
+        }
+
+        .category-chip:hover {
+            border-color: #bcdcff;
+            color: #0d6efd;
+            background-color: #f8fbff;
+            transform: translateY(-1px);
+        }
+
+        .category-chip.active {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+            box-shadow: 0 6px 18px rgba(13,110,253,0.12);
+        }
+
+        .category-chip i { font-size: 12px; }
+
+        /* On very small screens reduce padding */
+        @media (max-width: 420px) {
+            .category-chips { gap: 6px; padding: 4px; }
+            .category-chip { padding: 5px 10px; font-size: 12px; height: 32px; }
+        }
+
         .product-card { transition: transform 0.2s; margin-top: -8px; }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .spec-popup { 
@@ -380,6 +538,27 @@
         @keyframes fadeUp { 
             0% { opacity: 1; transform: translateY(0); } 
             100% { opacity: 0; transform: translateY(-20px); } 
+        }
+        .pagination a {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 0 3px;
+            border: 1px solid #ddd;
+            background-color: white;
+            color: #0d6efd;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .pagination a:hover {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+        .pagination a.active {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+            font-weight: bold;
         }
     </style>
 @endsection

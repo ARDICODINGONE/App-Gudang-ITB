@@ -24,6 +24,9 @@ Route::get('/shop', function () {
 // API endpoint to return products as JSON for the shop page
 Route::get('/shop/products', [BarangController::class, 'apiIndex'])->name('shop.products');
 
+// API endpoint to return categories as JSON for the shop page
+Route::get('/shop/categories', [KategoriController::class, 'apiIndex'])->name('shop.categories');
+
 Route::get('/cart', function () {
     return view('cart');
 });
