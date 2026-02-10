@@ -70,21 +70,41 @@
                             <tr>
                                 <th>No</th>
                                 <th>Nama Barang</th>
-                                <th class="text-end">Jumlah</th>
+                                <th class="text-end">Diajukan</th>
+                                @if($pengajuan->status === 'approved' || $pengajuan->status === 'partial_approved')
+                                <th class="text-end">Disetujui</th>
+                                <th class="text-center">Status</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($details as $index => $d)
-                            <tr>
+                            <tr class="@if(($d->status ?? null) === 'rejected') table-danger @elseif(($d->status ?? null) === 'approved') table-success @endif">
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $d->nama_barang ?? '-' }}</td>
                                 <td class="text-end">
-                                    <span class="badge bg-secondary">{{ $d->jumlah }}</span>
+                                    <span class="badge bg-info">{{ $d->jumlah }}</span>
                                 </td>
+                                @if($pengajuan->status === 'approved' || $pengajuan->status === 'partial_approved')
+                                <td class="text-end">
+                                    <span class="badge bg-{{ ($d->jumlah_disetujui ?? 0) > 0 ? 'success' : 'danger' }}">
+                                        {{ $d->jumlah_disetujui ?? 0 }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if(($d->status ?? null) === 'approved')
+                                        <span class="badge bg-success">✓ Disetujui</span>
+                                    @elseif(($d->status ?? null) === 'rejected')
+                                        <span class="badge bg-danger">✗ Ditolak</span>
+                                    @else
+                                        <span class="badge bg-secondary">Pending</span>
+                                    @endif
+                                </td>
+                                @endif
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3" class="text-center text-muted py-4">
+                                <td colspan="{{ ($pengajuan->status === 'approved' || $pengajuan->status === 'partial_approved') ? 5 : 3 }}" class="text-center text-muted py-4">
                                     <i class="fas fa-inbox"></i> Tidak ada detail barang
                                 </td>
                             </tr>
@@ -119,28 +139,55 @@
                 </div>
             </div>
 
-            <!-- Approval Actions -->
+            <!-- Approval Actions - For Approver -->
             @if($isApprover && $pengajuan->status === 'pending')
             <div class="card border-warning shadow-sm">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0">Aksi Persetujuan</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted small mb-3">Anda adalah approval team. Silakan setujui atau tolak pengajuan ini.</p>
+                    <p class="text-muted small mb-3">Silakan tentukan jumlah barang yang akan disetujui untuk setiap item. Jumlah yang tidak disetujui akan otomatis ditolak.</p>
 
-                    <form method="POST" action="{{ route('pengajuan.approve', $pengajuan->id) }}" style="margin-bottom: 10px;">
+                    <!-- Approval Details Form -->
+                    <form id="approval-form-{{ $pengajuan->id }}" method="POST" action="{{ route('pengajuan.approve', $pengajuan->id) }}" class="mb-3">
                         @csrf
-                        <button type="submit" class="btn btn-success w-100" onclick="return confirm('Yakin ingin menyetujui pengajuan ini?')">
-                            <i class="fas fa-check-circle"></i> Setujui Pengajuan
-                        </button>
-                    </form>
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Barang</th>
+                                        <th class="text-center">Diajukan</th>
+                                        <th class="text-center">Disetujui</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($details as $d)
+                                    <tr>
+                                        <td>{{ $d->nama_barang ?? '-' }}</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info">{{ $d->jumlah }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="number" name="approved[{{ $d->id }}]" min="0" max="{{ $d->jumlah }}" value="{{ $d->jumlah }}" class="form-control form-control-sm text-center" style="max-width: 80px; margin: 0 auto;" />
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-2">Tidak ada detail barang</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <form id="reject-form-{{ $pengajuan->id }}" method="POST" action="{{ route('pengajuan.reject', $pengajuan->id) }}">
-                        @csrf
-                        <input type="hidden" name="note" id="reject-note-{{ $pengajuan->id }}" value="">
-                        <button type="button" class="btn btn-danger w-100" onclick="askReason({{ $pengajuan->id }})">
-                            <i class="fas fa-times-circle"></i> Tolak Pengajuan
-                        </button>
+                        <div class="mt-3 d-flex gap-2">
+                            <button type="button" class="btn btn-success flex-grow-1" onclick="submitApproval({{ $pengajuan->id }})">
+                                <i class="fas fa-check-circle"></i> Setujui
+                            </button>
+                            <button type="button" class="btn btn-danger flex-grow-1" onclick="askRejectAll({{ $pengajuan->id }})">
+                                <i class="fas fa-times-circle"></i> Tolak Semua
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -155,6 +202,17 @@
                     <small class="text-muted d-block">Stok gudang sudah dikurangi sesuai pesanan</small>
                 </div>
             </div>
+            @elseif($isApprover && $pengajuan->status === 'partial_approved')
+            <div class="card border-info shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Status Persetujuan Sebagian</h5>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-circle text-info" style="font-size: 3rem;"></i>
+                    <p class="mt-3 mb-0"><strong>Pengajuan Disetujui Sebagian</strong></p>
+                    <small class="text-muted d-block">Ada item yang disetujui dan ada yang ditolak</small>
+                </div>
+            </div>
             @elseif($isApprover && $pengajuan->status === 'rejected')
             <div class="card border-danger shadow-sm">
                 <div class="card-header bg-danger text-white">
@@ -166,7 +224,10 @@
                     <small class="text-muted d-block">Silakan hubungi tim approval untuk informasi lebih lanjut</small>
                 </div>
             </div>
-            @elseif($isPengaju && $pengajuan->status === 'pending')
+            @endif
+
+            <!-- Status Cards - For Pengaju -->
+            @if($isPengaju && $pengajuan->status === 'pending')
             <div class="card border-info shadow-sm">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">Status Pengajuan</h5>
@@ -188,6 +249,21 @@
                     <small class="text-muted d-block">Barang Anda sudah disiapkan untuk diambil</small>
                 </div>
             </div>
+            @elseif($isPengaju && $pengajuan->status === 'partial_approved')
+            <div class="card border-info shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Status Pengajuan</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-exclamation-circle text-info" style="font-size: 3rem;"></i>
+                        <p class="mt-3 mb-0"><strong>Pengajuan Disetujui Sebagian</strong></p>
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <small>Beberapa item disetujui, sementara item lainnya tidak tersedia. Lihat detail di atas untuk informasi lengkap.</small>
+                    </div>
+                </div>
+            </div>
             @elseif($isPengaju && $pengajuan->status === 'rejected')
             <div class="card border-danger shadow-sm">
                 <div class="card-header bg-danger text-white">
@@ -198,9 +274,11 @@
                         <i class="fas fa-times-circle text-danger" style="font-size: 3rem;"></i>
                         <p class="mt-3 mb-0"><strong>Pengajuan Ditolak</strong></p>
                     </div>
+                    @if($pengajuan->rejection_reason)
                     <div class="alert alert-danger mb-0">
-                        <small><strong>Alasan:</strong> {{ $pengajuan->note ?? 'Tidak ada alasan diberikan' }}</small>
+                        <small><strong>Alasan:</strong> {{ $pengajuan->rejection_reason }}</small>
                     </div>
+                    @endif
                 </div>
             </div>
             @endif
@@ -209,11 +287,39 @@
 </div>
 
 <script>
-function askReason(pengajuanId) {
-    var reason = prompt('Alasan penolakan (opsional):');
+function submitApproval(pengajuanId) {
+    const form = document.getElementById('approval-form-' + pengajuanId);
+    const inputs = form.querySelectorAll('input[name^="approved"]');
+    let hasApproved = false;
+    let allRejected = true;
+    
+    inputs.forEach(input => {
+        const value = parseInt(input.value) || 0;
+        if (value > 0) {
+            hasApproved = true;
+            allRejected = false;
+        }
+    });
+    
+    if (!hasApproved) {
+        alert('Minimal ada 1 barang yang harus disetujui atau tolak semua pengajuan.');
+        return;
+    }
+    
+    if (confirm('Yakin ingin memproses approval dengan jumlah yang telah ditentukan?')) {
+        form.submit();
+    }
+}
+
+function askRejectAll(pengajuanId) {
+    const reason = prompt('Alasan penolakan (opsional):');
     if (reason !== null) {
-        document.getElementById('reject-note-' + pengajuanId).value = reason;
-        document.getElementById('reject-form-' + pengajuanId).submit();
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("pengajuan.reject", ":id") }}'.replace(':id', pengajuanId);
+        form.innerHTML = '{{ csrf_field() }}<input type="hidden" name="note" value="' + (reason || '') + '">';
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>

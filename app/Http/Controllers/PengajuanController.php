@@ -130,6 +130,7 @@ class PengajuanController extends Controller
                 'user_id' => Auth::id(),
                 'kode_gudang' => $request->gudang_id,
                 'jumlah' => array_sum($items),
+                'note' => $request->input('note') ?? null,
                 'tanggal' => Carbon::now()->toDateString(),
                 'status' => 'pending',
                 'created_at' => now(),
@@ -225,6 +226,7 @@ class PengajuanController extends Controller
                 'user_id' => Auth::id(),
                 'kode_gudang' => $selectedGudang,
                 'jumlah' => array_sum($items),
+                'note' => $request->input('note') ?? null,
                 'tanggal' => Carbon::now()->toDateString(),
                 'status' => 'pending',
                 'created_at' => now(),
@@ -328,43 +330,117 @@ class PengajuanController extends Controller
             return back()->with('error', 'Pengajuan sudah diproses.');
         }
 
+        // Get approval data from request (array of approved[detail_id] => qty)
+        $approvedMap = $request->input('approved', []);
+        $details = DB::table('pengajuan_detail')->where('pengajuan_id', $id)->get();
+
         DB::beginTransaction();
         try {
-            // check stok availability
-            $details = DB::table('pengajuan_detail')->where('pengajuan_id', $id)->get();
-            foreach ($details as $d) {
-                $stokRow = DB::table('stok')
-                    ->where('kode_gudang', $pengajuan->kode_gudang)
-                    ->where('id_barang', $d->barang_id)
-                    ->first();
+            $hasApproved = false;
+            $hasRejected = false;
+            $totalApproved = 0;
+            $totalRejected = 0;
 
-                if (!$stokRow || ($stokRow->stok ?? 0) < $d->jumlah) {
-                    throw new \Exception('Stok tidak cukup untuk barang ID: ' . $d->barang_id);
+            // Validate stok availability for approved items
+            foreach ($details as $d) {
+                $approvedQty = isset($approvedMap[$d->id]) ? (int) $approvedMap[$d->id] : 0;
+                
+                if ($approvedQty > 0) {
+                    $stokRow = DB::table('stok')
+                        ->where('kode_gudang', $pengajuan->kode_gudang)
+                        ->where('id_barang', $d->barang_id)
+                        ->first();
+
+                    if (!$stokRow || ($stokRow->stok ?? 0) < $approvedQty) {
+                        throw new \Exception('Stok tidak cukup untuk barang ID: ' . $d->barang_id . ' (dibutuhkan: ' . $approvedQty . ', tersedia: ' . ($stokRow->stok ?? 0) . ')');
+                    }
                 }
             }
 
-            // deduct stok
+            // Process approval/rejection for each detail
             foreach ($details as $d) {
-                DB::table('stok')
-                    ->where('kode_gudang', $pengajuan->kode_gudang)
-                    ->where('id_barang', $d->barang_id)
-                    ->decrement('stok', $d->jumlah);
+                $approvedQty = isset($approvedMap[$d->id]) ? (int) $approvedMap[$d->id] : 0;
+                $approvedQty = min($approvedQty, $d->jumlah); // ensure not more than requested
+
+                if ($approvedQty > 0) {
+                    // Deduct stok for approved quantity
+                    DB::table('stok')
+                        ->where('kode_gudang', $pengajuan->kode_gudang)
+                        ->where('id_barang', $d->barang_id)
+                        ->decrement('stok', $approvedQty);
+
+                    // Update detail: approved
+                    DB::table('pengajuan_detail')
+                        ->where('id', $d->id)
+                        ->update([
+                            'jumlah_disetujui' => $approvedQty,
+                            'status' => 'approved',
+                        ]);
+
+                    $hasApproved = true;
+                    $totalApproved += $approvedQty;
+                } else {
+                    // Update detail: rejected
+                    DB::table('pengajuan_detail')
+                        ->where('id', $d->id)
+                        ->update([
+                            'jumlah_disetujui' => 0,
+                            'status' => 'rejected',
+                        ]);
+
+                    $hasRejected = true;
+                    $totalRejected += $d->jumlah;
+                }
+            }
+
+            // Update pengajuan status
+            $status = 'approved';
+            if ($hasApproved && $hasRejected) {
+                $status = 'partial_approved';
+            } elseif (!$hasApproved && $hasRejected) {
+                $status = 'rejected';
             }
 
             DB::table('pengajuan')->where('id', $id)->update([
-                'status' => 'approved',
+                'status' => $status,
                 'updated_at' => now(),
             ]);
+
+            // Create barang_keluar entries for approved items
+            if ($hasApproved) {
+                $approvedDetails = DB::table('pengajuan_detail')
+                    ->where('pengajuan_id', $id)
+                    ->where('status', 'approved')
+                    ->get();
+
+                foreach ($approvedDetails as $detail) {
+                    DB::table('barang_keluar')->insert([
+                        'id_barang' => $detail->barang_id,
+                        'kode_gudang' => $pengajuan->kode_gudang,
+                        'jumlah' => $detail->jumlah_disetujui,
+                        'tanggal' => Carbon::now()->toDateString(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
 
             DB::commit();
 
             // Send notification to pengaju
-            NotificationHelper::notifyApprovalDecision($pengajuan, true);
+            $pengajuan = Pengajuan::find($id);
+            NotificationHelper::notifyApprovalDecision($pengajuan, true, $totalApproved, $totalRejected);
 
-            return redirect()->route('pengajuan.show', $id)->with('success', 'Pengajuan disetujui dan stok diperbarui.');
+            $statusMsg = $status === 'partial_approved' 
+                ? "Pengajuan disetujui sebagian: $totalApproved disetujui, $totalRejected ditolak."
+                : ($status === 'rejected' 
+                    ? "Pengajuan ditolak seluruhnya."
+                    : "Pengajuan disetujui seluruhnya.");
+
+            return redirect()->route('pengajuan.show', $id)->with('success', $statusMsg);
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyetujui: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses approval: ' . $e->getMessage());
         }
     }
 
@@ -386,7 +462,7 @@ class PengajuanController extends Controller
         DB::table('pengajuan')->where('id', $id)->update([
             'status' => 'rejected',
             'updated_at' => now(),
-            'note' => $request->input('note') ?? null,
+            'rejection_reason' => $request->input('note') ?? null,
         ]);
 
         // Send notification to pengaju

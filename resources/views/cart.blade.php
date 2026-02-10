@@ -15,7 +15,7 @@
                 <div class="card-body p-0">
                     <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
                         <h5 class="mb-0 fw-bold">Daftar Barang</h5>
-                        <a href="{{ url('/shop') }}" class="btn btn-outline-primary btn-sm rounded-pill">
+                        <a href="{{ url('/shop') }}" id="btn-lanjut-belanja" class="btn btn-outline-primary btn-sm rounded-pill">
                             <i class="fa fa-arrow-left me-2"></i>Lanjut Belanja
                         </a>
                     </div>
@@ -26,7 +26,7 @@
                         </div>
                         <h4 class="text-muted">Keranjang Anda Kosong</h4>
                         <p class="text-muted mb-4">Sepertinya Anda belum memilih produk apapun.</p>
-                        <a href="{{ url('/shop') }}" class="btn btn-primary px-4 py-2 rounded-pill">Mulai Belanja</a>
+                        <a href="{{ url('/shop') }}" id="btn-mulai-belanja" class="btn btn-primary px-4 py-2 rounded-pill">Mulai Belanja</a>
                     </div>
 
                     <div id="table-wrapper" style="display:none;">
@@ -73,6 +73,7 @@
 
                     <form id="form-ajukan" action="{{ route('pengajuan.fromCart') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="note" id="form-note" value="">
                         <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm hover-top">
                             Ajukan <i class="fa fa-chevron-right ms-2"></i>
                         </button>
@@ -85,6 +86,52 @@
 </div>
 
 <script>
+    // Determine the return URL based on referrer or previous page stored in localStorage
+    function getReturnUrl() {
+        // Check document.referrer first (more reliable)
+        if (document.referrer) {
+            const referrerUrl = new URL(document.referrer);
+            const baseUrl = new URL(window.location.origin);
+            
+            // If referrer is from same domain, use it
+            if (referrerUrl.origin === baseUrl.origin) {
+                return document.referrer;
+            }
+        }
+        
+        // Fallback to localStorage
+        const storedUrl = localStorage.getItem('cartReturnUrl');
+        if (storedUrl) {
+            return storedUrl;
+        }
+        
+        // Default to shop page
+        return '/shop';
+    }
+
+    // Set return URL for buttons
+    function setReturnUrlButtons() {
+        const returnUrl = getReturnUrl();
+        const lanjutBelanja = document.getElementById('btn-lanjut-belanja');
+        const mulaiBelanja = document.getElementById('btn-mulai-belanja');
+        
+        if (lanjutBelanja) {
+            lanjutBelanja.href = returnUrl;
+        }
+        if (mulaiBelanja) {
+            mulaiBelanja.href = returnUrl;
+        }
+    }
+
+    // Save current return URL when leaving cart
+    function saveReturnUrl() {
+        // Save the current page as potential return URL for future cart visits
+        // This runs on pages that might lead to cart
+        if (window.location.pathname !== '/cart') {
+            localStorage.setItem('cartReturnUrl', window.location.pathname + window.location.search);
+        }
+    }
+
     function formatRupiah(num) {
         return 'Rp ' + Number(num || 0).toLocaleString('id-ID');
     }
@@ -130,9 +177,11 @@
                     <td class="ps-4 py-3">
                         <div class="d-flex align-items-center">
                             <img src="${item.image || '/img/product-1.png'}" class="cart-img me-3">
-                            <div>
+                            <div class="w-100">
                                 <div class="product-name">${item.name}</div>
-                                <span class="product-gudang">Dari: ${item.nama_gudang}</span>
+                                <div class="product-gudang mt-1">
+                                    <i class="fa fa-warehouse me-1"></i>Gudang: <strong>${item.gudang_list}</strong>
+                                </div>
                             </div>
                         </div>
                     </td>
@@ -219,6 +268,48 @@
     // bind note input
     const noteEl = document.getElementById('order-note');
     if (noteEl) noteEl.addEventListener('input', saveNoteServer);
+
+    // copy note into hidden form input before submitting pengajuan
+    const formAjukan = document.getElementById('form-ajukan');
+    if (formAjukan) {
+        formAjukan.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            
+            const note = document.getElementById('order-note')?.value || '';
+            const hidden = document.getElementById('form-note');
+            if (hidden) hidden.value = note;
+            
+            // submit form via fetch to capture response
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const formData = new FormData(formAjukan);
+            
+            try {
+                const res = await fetch(formAjukan.action, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    body: formData
+                });
+                
+                if (res.ok) {
+                    // clear catatan from textarea after successful submission
+                    document.getElementById('order-note').value = '';
+                    // also clear note from cart via API
+                    await fetch('/cart/note', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: JSON.stringify({ note: '' })
+                    }).catch(() => {});
+                    // redirect to the pengajuan list page
+                    window.location.href = '/pengajuan/list';
+                } else {
+                    alert('Gagal membuat pengajuan. Silakan coba lagi.');
+                }
+            } catch (err) {
+                console.error('Gagal submit pengajuan:', err);
+                alert('Terjadi kesalahan. Silakan coba lagi.');
+            }
+        });
+    }
 
     // parse formatted Rupiah (e.g. "Rp 1.234") -> number
     function parseRupiah(str) {
@@ -346,7 +437,10 @@
         }
     };
 
-    document.addEventListener('DOMContentLoaded', loadCart);
+    document.addEventListener('DOMContentLoaded', function() {
+        setReturnUrlButtons();
+        loadCart();
+    });
 </script>
 
 <style>
@@ -376,13 +470,14 @@
         border-radius: 4px;
     }
     .product-gudang {
-        font-size: 11px;
-        color: #666;
+        font-size: 10px;
+        color: #555;
         font-weight: 500;
-        background: #e7f3ff;
-        padding: 2px 8px;
+        background: linear-gradient(135deg, #e7f3ff 0%, #d0e8ff 100%);
+        padding: 2px 6px;
         border-radius: 4px;
         display: inline-block;
+        border-left: 2px solid #0d6efd;
     }
 
     /* Kontrol Quantity */

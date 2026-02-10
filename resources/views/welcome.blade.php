@@ -39,6 +39,17 @@
                         </div>
                     </a>
                 </div>
+                <!-- Barang Keluar -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.25s">
+                    <a href="{{ url('/barang-keluar') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-upload fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Barang Keluar</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
                 <!-- Kategori -->
                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.25s">
                     <a href="{{ url('/kategori') }}" class="text-decoration-none">
@@ -46,28 +57,6 @@
                             <div class="text-center">
                                 <i class="fa fa-bars fa-2x text-primary d-block mb-2"></i>
                                 <div class="text-xs fw-bold text-dark">Kategori</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <!-- User -->
-                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.3s">
-                    <a href="{{ url('/user') }}" class="text-decoration-none">
-                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
-                            <div class="text-center">
-                                <i class="fa fa-users fa-2x text-primary d-block mb-2"></i>
-                                <div class="text-xs fw-bold text-dark">User</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <!-- Pengajuan -->
-                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.35s">
-                    <a href="{{ url('/pengajuan/list') }}" class="text-decoration-none">
-                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
-                            <div class="text-center">
-                                <i class="fa fa-paper-plane fa-2x text-primary d-block mb-2"></i>
-                                <div class="text-xs fw-bold text-dark">Pengajuan</div>
                             </div>
                         </div>
                     </a>

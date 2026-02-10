@@ -42,6 +42,8 @@
                                 <span class="badge bg-warning text-dark">⏳ Pending</span>
                             @elseif($it->status === 'approved')
                                 <span class="badge bg-success">✓ Disetujui</span>
+                            @elseif($it->status === 'partial_approved')
+                                <span class="badge bg-info">⚠ Sebagian Disetujui</span>
                             @else
                                 <span class="badge bg-danger">✗ Ditolak</span>
                             @endif

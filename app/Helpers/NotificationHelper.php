@@ -17,7 +17,14 @@ class NotificationHelper
 
         $title = 'Pengajuan Barang Baru';
         $message = 'Ada pengajuan barang baru dari ' . ($pengajuan->user->nama ?? 'User');
-        $detail = 'Kode Pengajuan: ' . $pengajuan->kode_pengajuan . ' | Jumlah Item: ' . $pengajuan->jumlah;
+        
+        // Get barang details
+        $details = $pengajuan->details()->with('barang')->get();
+        $barangList = $details->map(function($d) {
+            return $d->barang->nama_barang . ' (' . $d->jumlah . ' pcs)';
+        })->implode(', ');
+        
+        $detail = 'Barang: ' . $barangList;
         $type = 'info';
         $link = route('pengajuan.show', $pengajuan->id);
 
@@ -35,18 +42,31 @@ class NotificationHelper
     }
 
     /**
-     * Create notification when pengajuan is approved
+     * Create notification when pengajuan is approved (fully or partially)
      */
-    public static function notifyApprovalDecision($pengajuan, $approved = true)
+    public static function notifyApprovalDecision($pengajuan, $approved = true, $totalApproved = 0, $totalRejected = 0)
     {
         if (!$pengajuan->user_id) {
             return;
         }
 
-        $title = $approved ? 'Pengajuan Disetujui' : 'Pengajuan Ditolak';
-        $message = 'Pengajuan barang Anda telah ' . ($approved ? 'disetujui' : 'ditolak');
+        $title = $approved ? 'Pengajuan Diproses' : 'Pengajuan Ditolak';
+        
+        if ($totalApproved > 0 && $totalRejected > 0) {
+            // Partial approval
+            $message = 'Pengajuan barang Anda disetujui sebagian: ' . $totalApproved . ' disetujui, ' . $totalRejected . ' ditolak';
+            $type = 'warning';
+        } elseif ($totalApproved > 0) {
+            // Full approval
+            $message = 'Pengajuan barang Anda telah disetujui seluruhnya';
+            $type = 'success';
+        } else {
+            // Full rejection
+            $message = 'Pengajuan barang Anda telah ditolak seluruhnya';
+            $type = 'danger';
+        }
+        
         $detail = 'Kode Pengajuan: ' . $pengajuan->kode_pengajuan;
-        $type = $approved ? 'success' : 'danger';
         $link = route('pengajuan.show', $pengajuan->id);
 
         Notification::create([

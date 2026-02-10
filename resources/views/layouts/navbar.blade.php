@@ -114,13 +114,18 @@
                 <a href="{{ url('/') }}" class="nav-action-icon {{ Request::is('/') ? 'active' : '' }}" title="Beranda">
                     <i class="fas fa-home"></i>
                 </a>
+                @auth
                 @php $cartCount = session('cart_count', 0); @endphp
                 <a href="{{ url('/cart') }}" class="nav-action-icon cart {{ Request::is('cart') ? 'active' : '' }}" title="Keranjang">
                     <i class="fas fa-shopping-cart"></i>
                     @if($cartCount > 0)<span class="badge-count">{{ $cartCount }}</span>@endif
                 </a>
+                @endauth
                 <a href="{{ url('/pengajuan/list') }}" class="nav-action-icon {{ Request::is('pengajuan*') ? 'active' : '' }}" title="Pengajuan">
                     <i class="fas fa-paper-plane"></i>
+                </a>
+                <a href="{{ url('/user') }}" class="nav-action-icon {{ Request::is('user*') ? 'active' : '' }}" title="User">
+                    <i class="fas fa-user"></i>
                 </a>
                 @auth
                 <a href="#" class="nav-action-icon" id="notificationBtn" title="Notifikasi">

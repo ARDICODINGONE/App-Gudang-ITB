@@ -45,6 +45,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 
     <script src="{{ asset('js/main.js') }}"></script>
+
+    <script>
+        // Save current page URL to localStorage when not on cart page
+        // This allows cart to know where to return to
+        function saveReturnUrl() {
+            if (window.location.pathname !== '/cart') {
+                localStorage.setItem('cartReturnUrl', window.location.pathname + window.location.search);
+            }
+        }
+        
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', saveReturnUrl);
+        
+        // Also run immediately in case DOMContentLoaded has already fired
+        if (document.readyState === 'loading') {
+            // DOM still loading
+        } else {
+            // DOM already loaded
+            saveReturnUrl();
+        }
+    </script>
 </body>
 
 </html>

@@ -34,9 +34,9 @@ class Notification extends Model
         $diff = $this->created_at->diffInMinutes(now());
         
         if ($diff < 1) return 'Baru saja';
-        if ($diff < 60) return $diff . ' menit yang lalu';
-        if ($diff < 1440) return round($diff / 60) . ' jam yang lalu';
-        if ($diff < 43200) return round($diff / 1440) . ' hari yang lalu';
+        if ($diff < 60) return intval($diff) . ' menit yang lalu';
+        if ($diff < 1440) return intval(round($diff / 60)) . ' jam yang lalu';
+        if ($diff < 43200) return intval(round($diff / 1440)) . ' hari yang lalu';
         
         return $this->created_at->format('d M Y H:i');
     }

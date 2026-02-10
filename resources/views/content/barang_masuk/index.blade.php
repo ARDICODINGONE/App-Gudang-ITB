@@ -16,9 +16,6 @@
                 <a href="{{ route('barang-masuk.export') }}" class="btn btn-sm btn-success me-2">
                     <i class="ri-download-line me-1"></i>Export
                 </a>
-                <button id="btnBulkDelete" type="button" class="btn btn-sm btn-danger" onclick="konfirmasiHapusMultiple()" disabled>
-                    <i class="ri ri-delete-bin-6-line me-1"></i>Hapus Terpilih
-                </button>
             </div>
         </h5>
 
@@ -42,7 +39,6 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th><input type="checkbox" id="checkAll"></th>
                             <th>No</th>
                             <th>Barang</th>
                             <th>Gudang</th>
@@ -55,7 +51,6 @@
                     <tbody class="table-border-bottom-0">
                         @foreach ($items as $item)
                             <tr>
-                                <td><input type="checkbox" class="row-check" value="{{ $item->id }}"></td>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ optional($item->barang)->nama_barang }}</td>
                                 <td>{{ optional($item->gudang)->nama_gudang }}</td>
@@ -94,74 +89,11 @@
     @include('content.barang_masuk.update')
     @include('content.barang_masuk.import')
 
-        <!-- Bulk delete modal -->
-        <div class="modal fade" id="modalHapusMultipleBarangMasuk" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Konfirmasi Hapus Terpilih</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form id="formHapusMultipleBarangMasuk" action="{{ route('barang-masuk.bulkDestroy') }}" method="POST">
-                        @csrf
-                        <div class="modal-body">
-                            <p>Apakah Anda yakin ingin menghapus data barang masuk yang dipilih?</p>
-                            <p class="text-danger"><small>Tindakan ini tidak dapat dibatalkan.</small></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-danger">Ya, Hapus Terpilih</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-    <script>
+        <script>
         function konfirmasiHapus(actionUrl) {
             var form = document.getElementById('formHapusBarangMasuk');
             form.action = actionUrl;
             var myModal = new bootstrap.Modal(document.getElementById('modalHapusBarangMasuk'));
-            myModal.show();
-        }
-
-        // Bulk delete handlers
-        document.addEventListener('DOMContentLoaded', function () {
-            const checkAll = document.getElementById('checkAll');
-            const btnBulk = document.getElementById('btnBulkDelete');
-
-            function updateBulkState() {
-                const any = Array.from(document.querySelectorAll('.row-check')).some(cb => cb.checked);
-                btnBulk.disabled = !any;
-            }
-
-            if (checkAll) {
-                checkAll.addEventListener('change', function () {
-                    document.querySelectorAll('.row-check').forEach(cb => cb.checked = this.checked);
-                    updateBulkState();
-                });
-            }
-
-            document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateBulkState));
-        });
-
-        function konfirmasiHapusMultiple() {
-            const selected = Array.from(document.querySelectorAll('.row-check')).filter(cb => cb.checked).map(cb => cb.value);
-            if (!selected.length) return;
-
-            const form = document.getElementById('formHapusMultipleBarangMasuk');
-            // remove existing hidden inputs
-            form.querySelectorAll('input[name="ids[]"]').forEach(n => n.remove());
-            // append selected ids
-            selected.forEach(id => {
-                const inp = document.createElement('input');
-                inp.type = 'hidden';
-                inp.name = 'ids[]';
-                inp.value = id;
-                form.appendChild(inp);
-            });
-
-            var myModal = new bootstrap.Modal(document.getElementById('modalHapusMultipleBarangMasuk'));
             myModal.show();
         }
 
