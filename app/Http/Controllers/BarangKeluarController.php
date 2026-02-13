@@ -12,7 +12,7 @@ class BarangKeluarController extends Controller
 {
     public function index()
     {
-        $items = BarangKeluar::with(['barang', 'gudang'])->orderBy('tanggal', 'desc')->get();
+        $items = BarangKeluar::with(['barang', 'gudang'])->orderBy('tanggal', 'desc')->paginate(15);
         $barangs = Barang::orderBy('nama_barang')->get();
         $gudangs = Gudang::orderBy('kode_gudang')->get();
 

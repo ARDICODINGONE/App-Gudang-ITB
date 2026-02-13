@@ -115,18 +115,24 @@
                     <i class="fas fa-home"></i>
                 </a>
                 @auth
+                @if(auth()->user()->role !== 'approval')
                 @php $cartCount = session('cart_count', 0); @endphp
                 <a href="{{ url('/cart') }}" class="nav-action-icon cart {{ Request::is('cart') ? 'active' : '' }}" title="Keranjang">
                     <i class="fas fa-shopping-cart"></i>
                     @if($cartCount > 0)<span class="badge-count">{{ $cartCount }}</span>@endif
                 </a>
+                @endif
                 @endauth
                 <a href="{{ url('/pengajuan/list') }}" class="nav-action-icon {{ Request::is('pengajuan*') ? 'active' : '' }}" title="Pengajuan">
                     <i class="fas fa-paper-plane"></i>
                 </a>
+                @auth
+                @if(method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('admin'))
                 <a href="{{ url('/user') }}" class="nav-action-icon {{ Request::is('user*') ? 'active' : '' }}" title="User">
                     <i class="fas fa-user"></i>
                 </a>
+                @endif
+                @endauth
                 @auth
                 <a href="#" class="nav-action-icon" id="notificationBtn" title="Notifikasi">
                     <i class="fas fa-bell"></i>

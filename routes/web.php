@@ -12,6 +12,7 @@ use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\BarangKeluarController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PengajuanController;
+use App\Http\Controllers\ReportController;
 
 use App\Models\Kategori;
 use App\Http\Controllers\CartController;
@@ -113,8 +114,27 @@ Route::post('/pengajuan/from-cart', [PengajuanController::class, 'fromCart'])->n
 Route::post('/pengajuan', [PengajuanController::class, 'store'])->name('pengajuan.store');
 Route::get('/pengajuan/list', [PengajuanController::class, 'list'])->name('pengajuan.list');
 Route::get('/pengajuan/{id}/detail', [PengajuanController::class, 'show'])->name('pengajuan.show');
+Route::get('/pengajuan/{id}/details', [PengajuanController::class, 'getDetails'])->name('pengajuan.getDetails');
 Route::post('/pengajuan/{id}/approve', [PengajuanController::class, 'approve'])->name('pengajuan.approve');
 Route::post('/pengajuan/{id}/reject', [PengajuanController::class, 'reject'])->name('pengajuan.reject');
+
+// Reports (Laporan)
+Route::get('/laporan', [ReportController::class, 'index'])->name('laporan.index');
+Route::get('/laporan/stok-gudang', [ReportController::class, 'stokGudang'])->name('laporan.stok-gudang');
+Route::get('/laporan/stok-gudang/export-excel', [ReportController::class, 'exportStokGudangExcel'])->name('laporan.stok-gudang.export-excel');
+Route::get('/laporan/stok-gudang/export-pdf', [ReportController::class, 'exportStokGudangPdf'])->name('laporan.stok-gudang.export-pdf');
+Route::get('/laporan/barang-masuk', [ReportController::class, 'barangMasuk'])->name('laporan.barang-masuk');
+Route::get('/laporan/barang-masuk/export-excel', [ReportController::class, 'exportBarangMasukExcel'])->name('laporan.barang-masuk.export-excel');
+Route::get('/laporan/barang-masuk/export-pdf', [ReportController::class, 'exportBarangMasukPdf'])->name('laporan.barang-masuk.export-pdf');
+Route::get('/laporan/barang-keluar', [ReportController::class, 'barangKeluar'])->name('laporan.barang-keluar');
+Route::get('/laporan/barang-keluar/export-excel', [ReportController::class, 'exportBarangKeluarExcel'])->name('laporan.barang-keluar.export-excel');
+Route::get('/laporan/barang-keluar/export-pdf', [ReportController::class, 'exportBarangKeluarPdf'])->name('laporan.barang-keluar.export-pdf');
+Route::get('/laporan/pengajuan', [ReportController::class, 'pengajuan'])->name('laporan.pengajuan');
+Route::get('/laporan/pengajuan/export-excel', [ReportController::class, 'exportPengajuanExcel'])->name('laporan.pengajuan.export-excel');
+Route::get('/laporan/pengajuan/export-pdf', [ReportController::class, 'exportPengajuanPdf'])->name('laporan.pengajuan.export-pdf');
+Route::get('/laporan/riwayat-pengajuan', [ReportController::class, 'riwayatPengajuan'])->name('laporan.riwayat-pengajuan');
+Route::get('/laporan/riwayat-pengajuan/export-excel', [ReportController::class, 'exportRiwayatPengajuanExcel'])->name('laporan.riwayat-pengajuan.export-excel');
+Route::get('/laporan/riwayat-pengajuan/export-pdf', [ReportController::class, 'exportRiwayatPengajuanPdf'])->name('laporan.riwayat-pengajuan.export-pdf');
 
 // Notification
 Route::middleware('auth')->group(function () {

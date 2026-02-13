@@ -115,5 +115,45 @@
       var myModal = new bootstrap.Modal(document.getElementById('modalEditUser'));
       myModal.show();
     }
+
+    // Toggle password visibility di modal create
+    document.addEventListener('DOMContentLoaded', function() {
+      const togglePassword = document.getElementById('togglePassword');
+      if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+          const passwordInput = document.getElementById('password');
+          const icon = this.querySelector('i');
+          
+          if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+          } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+          }
+        });
+      }
+
+      // Toggle password visibility di modal edit
+      const toggleEditPassword = document.getElementById('toggleEditPassword');
+      if (toggleEditPassword) {
+        toggleEditPassword.addEventListener('click', function() {
+          const passwordInput = document.getElementById('edit_password');
+          const icon = this.querySelector('i');
+          
+          if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+          } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+          }
+        });
+      }
+    });
   </script>
 @endsection

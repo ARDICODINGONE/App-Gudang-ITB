@@ -19,7 +19,7 @@
                 @foreach($items as $it)
                 <tr>
                     <td>{{ $it->kode_pengajuan }}</td>
-                    <td>{{ $it->kode_gudang }}</td>
+                    <td>{{ $it->gudang->nama_gudang ?? $it->kode_gudang }}</td>
                     <td>{{ \Carbon\Carbon::parse($it->tanggal)->format('d/m') }}</td>
                     <td>{{ ucfirst($it->status) }}</td>
                     <td>

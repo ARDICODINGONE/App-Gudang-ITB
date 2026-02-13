@@ -16,7 +16,7 @@ class BarangMasukController extends Controller
 {
     public function index()
     {
-        $items = BarangMasuk::with(['barang', 'gudang', 'user'])->orderBy('tanggal', 'desc')->get();
+        $items = BarangMasuk::with(['barang', 'gudang', 'user'])->orderBy('tanggal', 'desc')->paginate(15);
         $barangs = Barang::orderBy('nama_barang')->get();
         $gudangs = Gudang::orderBy('kode_gudang')->get();
 

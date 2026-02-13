@@ -26,9 +26,9 @@ class BarangController extends Controller
                 $q->where('kode_gudang', $gudangKode);
             }])->whereHas('stok', function ($q) use ($gudangKode) {
                 $q->where('kode_gudang', $gudangKode);
-            })->get();
+            })->paginate(15);
         } else {
-            $barangs = Barang::with('kategori')->get();
+            $barangs = Barang::with('kategori')->paginate(15);
         }
 
         $kategoris = Kategori::all();

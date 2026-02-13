@@ -26,7 +26,12 @@
           <div class="row">
             <div class="col mb-3">
               <label for="password" class="form-label">Password</label>
-              <input type="password" id="password" name="password" class="form-control" required>
+              <div class="input-group">
+                <input type="password" id="password" name="password" class="form-control" required>
+                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                  <i class="fa fa-eye"></i>
+                </button>
+              </div>
             </div>
           </div>
           <div class="row">
@@ -36,7 +41,9 @@
                 <option value="user">User</option>
                 <option value="petugas">Petugas</option>
                 <option value="approval">Approval</option>
+                <option value="supervisor">Supervisor</option>
                 <option value="atasan">Atasan</option>
+                <option value="admin">Admin</option>
               </select>
             </div>
           </div>

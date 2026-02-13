@@ -51,7 +51,7 @@
                     <tbody class="table-border-bottom-0">
                         @foreach ($items as $item)
                             <tr>
-                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}</td>
                                 <td>{{ optional($item->barang)->nama_barang }}</td>
                                 <td>{{ optional($item->gudang)->nama_gudang }}</td>
                             
@@ -80,6 +80,9 @@
                         @endif
                     </tbody>
                 </table>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+                {{ $items->render('pagination::bootstrap-4') }}
             </div>
         </div>
     </div>

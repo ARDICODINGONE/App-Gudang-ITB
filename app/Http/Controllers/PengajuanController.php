@@ -262,31 +262,53 @@ class PengajuanController extends Controller
     public function list(Request $request)
     {
         $user = Auth::user();
-        $isApprover = $user && in_array($user->role, ['approval', 'atasan', 'admin']);
+        $isApprover = $user && $user->role === 'approval';
+        $isAdmin = $user && $user->role === 'atasan';
 
-        if ($isApprover) {
-            // Admin/Approval/Atasan: Show all pengajuan
-            $items = DB::table('pengajuan')
+        if ($isApprover || $isAdmin) {
+            // Approval/Atasan: Show all pengajuan
+            $query = DB::table('pengajuan')
                 ->leftJoin('users as u', 'pengajuan.user_id', '=', 'u.id')
-                ->select('pengajuan.*', 'u.nama as user_nama')
-                ->orderBy('pengajuan.created_at', 'desc')
-                ->paginate(20);
+                ->leftJoin('gudang as g', 'pengajuan.kode_gudang', '=', 'g.kode_gudang')
+                ->select('pengajuan.*', 'u.nama as user_nama', 'g.nama_gudang');
+            
+            // Filter by gudang
+            if ($request->filled('kode_gudang')) {
+                $query->where('pengajuan.kode_gudang', $request->kode_gudang);
+            }
+            
+            // Filter by dari tanggal
+            if ($request->filled('dari_tanggal')) {
+                $query->whereDate('pengajuan.tanggal', '>=', $request->dari_tanggal);
+            }
+            
+            // Filter by sampai tanggal
+            if ($request->filled('sampai_tanggal')) {
+                $query->whereDate('pengajuan.tanggal', '<=', $request->sampai_tanggal);
+            }
+            
+            $items = $query->orderBy('pengajuan.created_at', 'desc')->paginate(20);
             $view = 'content.pengajuan.list-approval';
         } else {
             // Regular user: Show only their own pengajuan
             $items = DB::table('pengajuan')
-                ->where('user_id', Auth::id())
-                ->orderBy('created_at', 'desc')
+                ->leftJoin('gudang as g', 'pengajuan.kode_gudang', '=', 'g.kode_gudang')
+                ->select('pengajuan.*', 'g.nama_gudang')
+                ->where('pengajuan.user_id', Auth::id())
+                ->orderBy('pengajuan.created_at', 'desc')
                 ->paginate(20);
             $view = 'content.pengajuan.list';
         }
 
-        return view($view, compact('items', 'isApprover'));
+        // Get list gudang for filter dropdown
+        $gudangs = DB::table('gudang')->select('kode_gudang', 'nama_gudang')->get();
+
+        return view($view, compact('items', 'isApprover', 'gudangs'));
     }
 
     public function show($id)
     {
-        $pengajuan = DB::table('pengajuan')->where('id', $id)->first();
+        $pengajuan = Pengajuan::find($id);
         
         if (!$pengajuan) {
             return back()->with('error', 'Pengajuan tidak ditemukan.');
@@ -294,12 +316,13 @@ class PengajuanController extends Controller
 
         // Authorization: User bisa lihat jika:
         // 1. Dia yang buat pengajuan (user_id sama)
-        // 2. Dia adalah approval/atasan/admin
+        // 2. Dia adalah approval atau atasan
         $user = Auth::user();
-        $isApprover = $user && in_array($user->role, ['approval', 'atasan', 'admin']);
+        $isApprover = $user && $user->role === 'approval';
+        $isAdmin = $user && $user->role === 'atasan';
         $isPengaju = $user && $pengajuan->user_id == $user->id;
 
-        if (!$isApprover && !$isPengaju) {
+        if (!$isApprover && !$isAdmin && !$isPengaju) {
             abort(403, 'Anda tidak memiliki akses ke pengajuan ini');
         }
 
@@ -315,9 +338,61 @@ class PengajuanController extends Controller
         return view('content.pengajuan.show', compact('pengajuan', 'details', 'user_pengaju', 'isApprover', 'isPengaju'));
     }
 
+    public function getDetails($id, Request $request)
+    {
+        $pengajuan = DB::table('pengajuan')->where('id', $id)->first();
+        
+        if (!$pengajuan) {
+            return response()->json(['error' => 'Pengajuan tidak ditemukan'], 404);
+        }
+
+        // Authorization check
+        $user = Auth::user();
+        $isApprover = $user && $user->role === 'approval';
+        $isAdmin = $user && $user->role === 'atasan';
+        $isPengaju = $user && $pengajuan->user_id == $user->id;
+
+        if (!$isApprover && !$isAdmin && !$isPengaju) {
+            return response()->json(['error' => 'Akses ditolak'], 403);
+        }
+
+        $page = $request->query('page', 1);
+        $perPage = 5;
+
+        $detailsQuery = DB::table('pengajuan_detail as pd')
+            ->leftJoin('barang as b', 'pd.barang_id', '=', 'b.id')
+            ->where('pd.pengajuan_id', $id)
+            ->select('pd.*', 'b.nama_barang');
+
+        $totalItems = $detailsQuery->count();
+        $details = $detailsQuery->paginate($perPage, ['*'], 'page', $page);
+
+        $items = $details->getCollection()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'nama_barang' => $item->nama_barang,
+                'jumlah' => $item->jumlah,
+                'jumlah_disetujui' => $item->jumlah_disetujui ?? 0,
+                'status' => $item->status ?? null,
+            ];
+        });
+
+        return response()->json([
+            'items' => $items,
+            'pengajuan_status' => $pengajuan->status,
+            'pagination' => [
+                'current_page' => $details->currentPage(),
+                'last_page' => $details->lastPage(),
+                'per_page' => $details->perPage(),
+                'total' => $totalItems,
+                'has_pages' => $totalItems > $perPage,
+            ],
+        ]);
+    }
+
     public function approve(Request $request, $id)
     {
-        if (!Auth::check() || !in_array(Auth::user()->role, ['approval', 'atasan', 'admin'])) {
+        if (!Auth::check() || Auth::user()->role !== 'approval') {
             abort(403);
         }
 
@@ -446,7 +521,7 @@ class PengajuanController extends Controller
 
     public function reject(Request $request, $id)
     {
-        if (!Auth::check() || !in_array(Auth::user()->role, ['approval', 'atasan', 'admin'])) {
+        if (!Auth::check() || Auth::user()->role !== 'approval') {
             abort(403);
         }
 

@@ -23,7 +23,7 @@ class Pengajuan extends Model
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
+        'tanggal' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];

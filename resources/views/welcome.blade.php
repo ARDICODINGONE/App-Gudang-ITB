@@ -2,7 +2,7 @@
 
 @section('content')
     @auth
-    @if(auth()->user()->role === 'atasan' || auth()->user()->role === 'admin')
+    @if(auth()->check() && (auth()->user()->role === 'atasan' || auth()->user()->role === 'admin' || auth()->user()->role === 'petugas'))
     <div class="container-fluid bg-light py-3">
         <div class="container">
             <div class="row g-3 justify-content-center">
@@ -63,11 +63,29 @@
                 </div>
                 <!-- Laporan -->
                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.4s">
-                    <a href="{{ url('/shop') }}" class="text-decoration-none">
+                    <a href="{{ url('/laporan') }}" class="text-decoration-none">
                         <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
                             <div class="text-center">
                                 <i class="fa fa-file-alt fa-2x text-primary d-block mb-2"></i>
                                 <div class="text-xs fw-bold text-dark">Laporan</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @elseif(auth()->check() && auth()->user()->role === 'approval')
+    <div class="container-fluid bg-light py-3">
+        <div class="container">
+            <div class="row g-3 justify-content-center">
+                <!-- Pengajuan -->
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.15s">
+                    <a href="{{ url('/pengajuan/list') }}" class="text-decoration-none">
+                        <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
+                            <div class="text-center">
+                                <i class="fa fa-paper-plane fa-2x text-primary d-block mb-2"></i>
+                                <div class="text-xs fw-bold text-dark">Pengajuan</div>
                             </div>
                         </div>
                     </a>
@@ -103,7 +121,7 @@
                 </div>
                 <!-- Laporan -->
                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 wow fadeInUp" data-wow-delay="0.2s">
-                    <a href="{{ url('/shop') }}" class="text-decoration-none">
+                    <a href="{{ route('laporan.riwayat-pengajuan') }}" class="text-decoration-none">
                         <div class="menu-card p-3 rounded shadow-sm border-0 bg-white transition-all">
                             <div class="text-center">
                                 <i class="fa fa-file-alt fa-2x text-primary d-block mb-2"></i>
@@ -151,12 +169,12 @@
             </div>
         </div>
     </div>
+    @if(auth()->check() && auth()->user()->role !== 'approval')
     <div class="container-fluid bg-light py-5">
         <div class="container">
             <div class="row g-4">
                 @php
-                    use App\Models\Gudang;
-                    $allGudang = Gudang::all();
+                    $allGudang = \App\Models\Gudang::all();
                 @endphp
 
                 @forelse($allGudang as $g)
@@ -189,4 +207,5 @@
             </div>
         </div>
     </div>
+    @endif
 @endsection

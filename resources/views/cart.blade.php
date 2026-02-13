@@ -44,6 +44,12 @@
                                     </tbody>
                             </table>
                         </div>
+                        <div id="pagination-wrapper" style="display:none; padding: 1.5rem; border-top: 1px solid #dee2e6; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+                            <nav aria-label="Page navigation">
+                                <ul id="pagination-list" class="pagination justify-content-center mb-0">
+                                </ul>
+                            </nav>
+                        </div>
                         <div class="p-3 bg-light border-top">
                              <button id="btn-clear-cart" class="btn btn-sm btn-link text-danger text-decoration-none">
                                 <i class="fa fa-trash me-1"></i> Bersihkan Keranjang
@@ -141,13 +147,15 @@
         const emptyState = document.getElementById('cart-empty');
         const summaryCol = document.getElementById('cart-summary-col');
         const list = document.getElementById('cart-items');
+        const paginationWrapper = document.getElementById('pagination-wrapper');
 
         try {
             const res = await fetch('/cart/items');
             const payload = await res.json();
 
-            // payload may be an array (legacy) or an object { items, note }
+            // payload may be an array (legacy) or an object { items, note, pagination }
             const cart = Array.isArray(payload) ? payload : (payload.items || []);
+            const pagination = !Array.isArray(payload) ? (payload.pagination || {}) : null;
 
             if (!cart || cart.length === 0) {
                 tableWrapper.style.display = 'none';
@@ -212,6 +220,14 @@
                 if (noteEl) noteEl.value = payload.note || '';
             }
 
+            // build pagination if items >= 5
+            if (pagination && pagination.has_pages) {
+                renderPagination(pagination);
+                paginationWrapper.style.display = 'block';
+            } else {
+                paginationWrapper.style.display = 'none';
+            }
+
             // Re-bind events
             attachEvents();
 
@@ -250,6 +266,153 @@
             clearTimeout(t);
             t = setTimeout(() => fn.apply(this, args), wait);
         };
+    }
+
+    function renderPagination(pagination) {
+        const paginationList = document.getElementById('pagination-list');
+        paginationList.innerHTML = '';
+
+        const currentPage = pagination.current_page || 1;
+        const lastPage = pagination.last_page || 1;
+
+        // Previous button
+        if (currentPage > 1) {
+            const prevLi = document.createElement('li');
+            prevLi.className = 'page-item';
+            prevLi.innerHTML = `<a class="page-link" href="javascript:void(0);" onclick="loadCartPage(${currentPage - 1})" title="Halaman Sebelumnya"><i class="fa fa-chevron-left"></i> Sebelumnya</a>`;
+            paginationList.appendChild(prevLi);
+        } else {
+            const prevLi = document.createElement('li');
+            prevLi.className = 'page-item disabled';
+            prevLi.innerHTML = `<span class="page-link" title="Tidak ada halaman sebelumnya"><i class="fa fa-chevron-left"></i> Sebelumnya</span>`;
+            paginationList.appendChild(prevLi);
+        }
+
+        // Page numbers dengan range
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(lastPage, currentPage + 2);
+
+        // Tampilkan halaman pertama jika tidak ditampilkan
+        if (startPage > 1) {
+            const firstLi = document.createElement('li');
+            firstLi.className = 'page-item';
+            firstLi.innerHTML = `<a class="page-link" href="javascript:void(0);" onclick="loadCartPage(1)">1</a>`;
+            paginationList.appendChild(firstLi);
+
+            if (startPage > 2) {
+                const dotsLi = document.createElement('li');
+                dotsLi.className = 'page-item disabled';
+                dotsLi.innerHTML = `<span class="page-link">...</span>`;
+                paginationList.appendChild(dotsLi);
+            }
+        }
+
+        // Tampilkan range halaman
+        for (let i = startPage; i <= endPage; i++) {
+            const li = document.createElement('li');
+            li.className = currentPage === i ? 'page-item active' : 'page-item';
+            li.innerHTML = `<a class="page-link" href="javascript:void(0);" onclick="loadCartPage(${i})">${i}</a>`;
+            paginationList.appendChild(li);
+        }
+
+        // Tampilkan halaman terakhir jika tidak ditampilkan
+        if (endPage < lastPage) {
+            if (endPage < lastPage - 1) {
+                const dotsLi = document.createElement('li');
+                dotsLi.className = 'page-item disabled';
+                dotsLi.innerHTML = `<span class="page-link">...</span>`;
+                paginationList.appendChild(dotsLi);
+            }
+
+            const lastLi = document.createElement('li');
+            lastLi.className = 'page-item';
+            lastLi.innerHTML = `<a class="page-link" href="javascript:void(0);" onclick="loadCartPage(${lastPage})">${lastPage}</a>`;
+            paginationList.appendChild(lastLi);
+        }
+
+        // Next button
+        if (currentPage < lastPage) {
+            const nextLi = document.createElement('li');
+            nextLi.className = 'page-item';
+            nextLi.innerHTML = `<a class="page-link" href="javascript:void(0);" onclick="loadCartPage(${currentPage + 1})" title="Halaman Berikutnya">Berikutnya <i class="fa fa-chevron-right"></i></a>`;
+            paginationList.appendChild(nextLi);
+        } else {
+            const nextLi = document.createElement('li');
+            nextLi.className = 'page-item disabled';
+            nextLi.innerHTML = `<span class="page-link" title="Tidak ada halaman berikutnya">Berikutnya <i class="fa fa-chevron-right"></i></span>`;
+            paginationList.appendChild(nextLi);
+        }
+    }
+
+    async function loadCartPage(page) {
+        const tableWrapper = document.getElementById('table-wrapper');
+        const list = document.getElementById('cart-items');
+
+        try {
+            const res = await fetch(`/cart/items?page=${page}`);
+            const payload = await res.json();
+
+            const cart = payload.items || [];
+            const pagination = payload.pagination || {};
+
+            if (!cart || cart.length === 0) {
+                // If no items on this page, reload full cart
+                loadCart();
+                return;
+            }
+
+            list.innerHTML = '';
+            let total = 0;
+
+            cart.forEach((item) => {
+                const subtotal = (parseFloat(item.price) || 0) * (parseInt(item.qty) || 0);
+                total += subtotal;
+
+                const tr = document.createElement('tr');
+                tr.className = 'cart-row';
+                tr.innerHTML = `
+                    <td class="ps-4 py-3">
+                        <div class="d-flex align-items-center">
+                            <img src="${item.image || '/img/product-1.png'}" class="cart-img me-3">
+                            <div class="w-100">
+                                <div class="product-name">${item.name}</div>
+                                <div class="product-gudang mt-1">
+                                    <i class="fa fa-warehouse me-1"></i>Gudang: <strong>${item.gudang_list}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="fw-semibold text-secondary">
+                        ${formatRupiah(item.price)}
+                    </td>
+                    <td>
+                            <div class="qty-container mx-auto" title="Max: ${item.max_qty}">
+                            <button class="qty-btn btn-decr" data-id="${item.id}"><i class="fa fa-minus fa-xs"></i></button>
+                            <input type="number" min="1" max="${item.max_qty}" class="qty-input" data-id="${item.id}" value="${item.qty}" data-prev="${item.qty}" data-max="${item.max_qty}" title="Max tersedia: ${item.max_qty}" />
+                            <button class="qty-btn btn-incr" data-id="${item.id}"><i class="fa fa-plus fa-xs"></i></button>
+                        </div>
+                    </td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-danger border-0 rounded-circle btn-remove" data-id="${item.id}">
+                            <i class="fa fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                list.appendChild(tr);
+            });
+
+            // Update pagination
+            if (pagination && pagination.has_pages) {
+                renderPagination(pagination);
+                document.getElementById('pagination-wrapper').style.display = 'block';
+            }
+
+            // Re-bind events
+            attachEvents();
+
+        } catch (err) {
+            console.error("Gagal memuat halaman keranjang:", err);
+        }
     }
 
     // save note to server
@@ -545,6 +708,72 @@
     @media (max-width: 768px) {
         .cart-img { width: 50px; height: 50px; }
         .product-name { font-size: 13px; }
+    }
+
+    /* Pagination Styling */
+    .pagination {
+        gap: 6px;
+    }
+
+    .pagination .page-link {
+        color: #0d6efd;
+        background-color: #fff;
+        border: 1.5px solid #dee2e6;
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+        font-size: 13px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        min-width: 38px;
+        text-align: center;
+    }
+
+    .pagination .page-link:hover {
+        color: #fff;
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.25);
+        transform: translateY(-2px);
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    }
+
+    .pagination .page-item.disabled .page-link {
+        color: #b5bcc7;
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        cursor: not-allowed;
+    }
+
+    .pagination .page-item.disabled .page-link:hover {
+        color: #b5bcc7;
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Animasi untuk pagination link */
+    .page-link i {
+        margin: 0 4px;
+    }
+
+    @media (max-width: 768px) {
+        .pagination {
+            flex-wrap: wrap;
+        }
+        
+        .pagination .page-link {
+            padding: 0.4rem 0.6rem;
+            font-size: 12px;
+            min-width: 35px;
+        }
     }
 </style>
 @endsection

@@ -41,7 +41,7 @@
             <button class="btn btn-primary px-4" id="btn-search">
                 <i class="fa fa-search"></i>
             </button>
-            @if (auth()->check() && auth()->user()->role === 'atasan')
+            @if (auth()->check() && (auth()->user()->role === 'atasan' || auth()->user()->role === 'admin' || auth()->user()->role === 'petugas'))
                 {{-- Admin controls removed: add/remove buttons --}}
             @endif
         </div>

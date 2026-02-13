@@ -25,7 +25,16 @@ class CartController extends Controller
     public function items(Request $request)
     {
         $cart = $this->findOrCreateCart($request);
-        $items = $cart->items()->with('barang.stok')->get()->map(function ($it) {
+        $page = $request->query('page', 1);
+        $perPage = 5;
+        
+        $cartItemsQuery = $cart->items()->with('barang.stok');
+        $totalItems = $cartItemsQuery->count();
+        
+        // Get paginated items
+        $cartItems = $cartItemsQuery->paginate($perPage, ['*'], 'page', $page);
+        
+        $items = $cartItems->getCollection()->map(function ($it) {
             // Calculate total stock for this barang across all gudang
             $totalStock = $it->barang->stok()->sum('stok') ?? 0;
             
@@ -55,6 +64,13 @@ class CartController extends Controller
         return response()->json([
             'items' => $items,
             'note' => $cart->note ?? null,
+            'pagination' => [
+                'current_page' => $cartItems->currentPage(),
+                'last_page' => $cartItems->lastPage(),
+                'per_page' => $cartItems->perPage(),
+                'total' => $totalItems,
+                'has_pages' => $totalItems > $perPage,
+            ],
         ]);
     }
 

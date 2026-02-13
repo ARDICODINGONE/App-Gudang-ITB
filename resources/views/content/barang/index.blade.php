@@ -94,6 +94,9 @@
           </tbody>
         </table>
       </div>
+      <div class="d-flex justify-content-end mt-3">
+        {{ $barangs->render('pagination::bootstrap-4') }}
+      </div>
     </div>
   </div>
 

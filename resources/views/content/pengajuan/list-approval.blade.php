@@ -9,6 +9,43 @@
         </div>
     </div>
 
+    <!-- Filter Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('pengajuan.list') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="kode_gudang">Gudang</label>
+                    <select class="form-select" id="kode_gudang" name="kode_gudang">
+                        <option value="">-- Semua Gudang --</option>
+                        @foreach($gudangs as $g)
+                            <option value="{{ $g->kode_gudang }}" {{ request('kode_gudang') == $g->kode_gudang ? 'selected' : '' }}>
+                                {{ $g->nama_gudang }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="dari_tanggal">Dari Tanggal</label>
+                    <input type="date" class="form-control" id="dari_tanggal" name="dari_tanggal" 
+                        value="{{ request('dari_tanggal') }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="sampai_tanggal">Sampai Tanggal</label>
+                    <input type="date" class="form-control" id="sampai_tanggal" name="sampai_tanggal" 
+                        value="{{ request('sampai_tanggal') }}">
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-search-line me-1"></i>Cari
+                    </button>
+                    <a href="{{ route('pengajuan.list') }}" class="btn btn-secondary">
+                        <i class="ri-refresh-line me-1"></i>Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @if($items->total() > 0)
         <div class="table-responsive">
             <table class="table table-hover">
@@ -32,7 +69,7 @@
                         <td>
                             <small>{{ $it->user_nama ?? 'Unknown' }}</small>
                         </td>
-                        <td>{{ $it->kode_gudang }}</td>
+                        <td>{{ $it->nama_gudang ?? $it->kode_gudang }}</td>
                         <td>
                             <span class="badge badge-primary">{{ $it->jumlah }} item</span>
                         </td>
@@ -60,7 +97,7 @@
         </div>
 
         <nav aria-label="Page navigation">
-            {{ $items->links('pagination::bootstrap-4') }}
+            {{ $items->appends(request()->query())->links('pagination::bootstrap-4') }}
         </nav>
     @else
         <div class="alert alert-info text-center py-5">

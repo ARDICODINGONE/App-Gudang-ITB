@@ -44,7 +44,7 @@
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <span class="text-muted">Kode: <strong>{{ $gudang->kode_gudang }}</strong></span>
                                 @auth
-                                    @if(auth()->user() && auth()->user()->role === 'atasan')
+                                    @if(auth()->user() && (auth()->user()->role === 'atasan' || auth()->user()->role === 'admin' || auth()->user()->role === 'petugas'))
                                         <div class="d-flex">
                                             <a class="btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
                                                 data-route="{{ route('gudang.update', $gudang->kode_gudang) }}"

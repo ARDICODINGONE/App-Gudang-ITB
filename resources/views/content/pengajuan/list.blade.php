@@ -35,7 +35,7 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <small class="text-muted d-block">Gudang</small>
-                            <strong>{{ $it->kode_gudang }}</strong>
+                            <strong>{{ $it->nama_gudang ?? $it->kode_gudang }}</strong>
                         </div>
                         <div class="mb-3">
                             <small class="text-muted d-block">Jumlah Item</small>
