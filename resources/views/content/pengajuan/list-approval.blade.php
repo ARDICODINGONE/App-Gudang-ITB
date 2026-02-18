@@ -13,7 +13,7 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('pengajuan.list') }}" class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label" for="kode_gudang">Gudang</label>
                     <select class="form-select" id="kode_gudang" name="kode_gudang">
                         <option value="">-- Semua Gudang --</option>
@@ -24,12 +24,22 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label class="form-label" for="status">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">-- Semua Status --</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>⏳ Pending</option>
+                        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>✓ Disetujui</option>
+                        <option value="partial_approved" {{ request('status') == 'partial_approved' ? 'selected' : '' }}>⚠ Sebagian Disetujui</option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>✗ Ditolak</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <label class="form-label" for="dari_tanggal">Dari Tanggal</label>
                     <input type="date" class="form-control" id="dari_tanggal" name="dari_tanggal" 
                         value="{{ request('dari_tanggal') }}">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label" for="sampai_tanggal">Sampai Tanggal</label>
                     <input type="date" class="form-control" id="sampai_tanggal" name="sampai_tanggal" 
                         value="{{ request('sampai_tanggal') }}">
@@ -54,7 +64,7 @@
                         <th style="width: 120px;">Kode Pengajuan</th>
                         <th>Pengaju</th>
                         <th>Gudang</th>
-                        <th>Jumlah Item</th>
+                        <th>Jenis Item</th>
                         <th>Tanggal</th>
                         <th>Status</th>
                         <th style="width: 140px;">Aksi</th>
@@ -71,7 +81,7 @@
                         </td>
                         <td>{{ $it->nama_gudang ?? $it->kode_gudang }}</td>
                         <td>
-                            <span class="badge badge-primary">{{ $it->jumlah }} item</span>
+                            <span class="badge badge-primary">{{ $it->total_items }} item</span>
                         </td>
                         <td>{{ \Carbon\Carbon::parse($it->tanggal)->format('d M Y') }}</td>
                         <td>

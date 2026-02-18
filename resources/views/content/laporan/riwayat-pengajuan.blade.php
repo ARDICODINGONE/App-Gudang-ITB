@@ -27,7 +27,7 @@
                         <a href="{{ route('laporan.riwayat-pengajuan.export-pdf', request()->query()) }}" class="btn btn-outline-danger">
                             <i class="ri-file-pdf-line me-1"></i>Export PDF
                         </a>
-                        <a href="{{ route('laporan.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
                             <i class="ri-arrow-left-line me-1"></i>Kembali
                         </a>
                     </div>

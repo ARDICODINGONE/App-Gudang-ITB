@@ -53,6 +53,7 @@ Route::get('/checkout', function () {
     return view('checkout');
 })->name('checkout');
 
+Route::middleware(['auth', 'petugas'])->group(function () {
 // Gudang
 Route::get('/gudang', [GudangController::class, 'index'])->name('gudang-index');
 
@@ -77,11 +78,6 @@ Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori-in
 Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori-store');
 Route::put('/kategori/{kategori}', [KategoriController::class, 'update'])->name('kategori.update');
 Route::delete('/kategori/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
-//supplier
-Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier-index');
-Route::post('/supplier/store', [SupplierController::class, 'store'])->name('supplier.store');
-Route::delete('/supplier/{supplier}', [SupplierController::class, 'destroy'])->name('supplier.destroy');
-Route::put('/supplier/{supplier}', [SupplierController::class, 'update'])->name('supplier.update');
 // User
 Route::get('/user', [UserController::class, 'index'])->name('user-index');
 Route::post('/user/store', [UserController::class, 'store'])->name('user.store');
@@ -108,33 +104,19 @@ Route::post('/barang-keluar/store', [BarangKeluarController::class, 'store'])->n
 Route::put('/barang-keluar/{barang_keluar}', [BarangKeluarController::class, 'update'])->name('barang-keluar.update');
 Route::delete('/barang-keluar/{barang_keluar}', [BarangKeluarController::class, 'destroy'])->name('barang-keluar.destroy');
 
-// Pengajuan
-Route::get('/pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
-Route::post('/pengajuan/from-cart', [PengajuanController::class, 'fromCart'])->name('pengajuan.fromCart');
-Route::post('/pengajuan', [PengajuanController::class, 'store'])->name('pengajuan.store');
-Route::get('/pengajuan/list', [PengajuanController::class, 'list'])->name('pengajuan.list');
-Route::get('/pengajuan/{id}/detail', [PengajuanController::class, 'show'])->name('pengajuan.show');
-Route::get('/pengajuan/{id}/details', [PengajuanController::class, 'getDetails'])->name('pengajuan.getDetails');
-Route::post('/pengajuan/{id}/approve', [PengajuanController::class, 'approve'])->name('pengajuan.approve');
-Route::post('/pengajuan/{id}/reject', [PengajuanController::class, 'reject'])->name('pengajuan.reject');
-
 // Reports (Laporan)
 Route::get('/laporan', [ReportController::class, 'index'])->name('laporan.index');
 Route::get('/laporan/stok-gudang', [ReportController::class, 'stokGudang'])->name('laporan.stok-gudang');
-Route::get('/laporan/stok-gudang/export-excel', [ReportController::class, 'exportStokGudangExcel'])->name('laporan.stok-gudang.export-excel');
-Route::get('/laporan/stok-gudang/export-pdf', [ReportController::class, 'exportStokGudangPdf'])->name('laporan.stok-gudang.export-pdf');
 Route::get('/laporan/barang-masuk', [ReportController::class, 'barangMasuk'])->name('laporan.barang-masuk');
 Route::get('/laporan/barang-masuk/export-excel', [ReportController::class, 'exportBarangMasukExcel'])->name('laporan.barang-masuk.export-excel');
 Route::get('/laporan/barang-masuk/export-pdf', [ReportController::class, 'exportBarangMasukPdf'])->name('laporan.barang-masuk.export-pdf');
 Route::get('/laporan/barang-keluar', [ReportController::class, 'barangKeluar'])->name('laporan.barang-keluar');
 Route::get('/laporan/barang-keluar/export-excel', [ReportController::class, 'exportBarangKeluarExcel'])->name('laporan.barang-keluar.export-excel');
 Route::get('/laporan/barang-keluar/export-pdf', [ReportController::class, 'exportBarangKeluarPdf'])->name('laporan.barang-keluar.export-pdf');
-Route::get('/laporan/pengajuan', [ReportController::class, 'pengajuan'])->name('laporan.pengajuan');
-Route::get('/laporan/pengajuan/export-excel', [ReportController::class, 'exportPengajuanExcel'])->name('laporan.pengajuan.export-excel');
-Route::get('/laporan/pengajuan/export-pdf', [ReportController::class, 'exportPengajuanPdf'])->name('laporan.pengajuan.export-pdf');
 Route::get('/laporan/riwayat-pengajuan', [ReportController::class, 'riwayatPengajuan'])->name('laporan.riwayat-pengajuan');
 Route::get('/laporan/riwayat-pengajuan/export-excel', [ReportController::class, 'exportRiwayatPengajuanExcel'])->name('laporan.riwayat-pengajuan.export-excel');
 Route::get('/laporan/riwayat-pengajuan/export-pdf', [ReportController::class, 'exportRiwayatPengajuanPdf'])->name('laporan.riwayat-pengajuan.export-pdf');
+});
 
 // Notification
 Route::middleware('auth')->group(function () {
@@ -145,6 +127,38 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
     Route::delete('/notifications/{id}', [NotificationController::class, 'delete'])->name('notifications.delete');
+});
+
+// Admin only routes
+Route::middleware(['auth', 'admin'])->group(function () {
+    // Supplier
+    Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier-index');
+    Route::post('/supplier/store', [SupplierController::class, 'store'])->name('supplier.store');
+    Route::delete('/supplier/{supplier}', [SupplierController::class, 'destroy'])->name('supplier.destroy');
+    Route::put('/supplier/{supplier}', [SupplierController::class, 'update'])->name('supplier.update');
+    // User
+    Route::get('/user', [UserController::class, 'index'])->name('user-index');
+    Route::post('/user/store', [UserController::class, 'store'])->name('user.store');
+    Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+    Route::put('/user/{user}', [UserController::class, 'update'])->name('user.update');
+    // Admin reports
+    Route::get('/laporan/stok-gudang/export-excel', [ReportController::class, 'exportStokGudangExcel'])->name('laporan.stok-gudang.export-excel');
+    Route::get('/laporan/stok-gudang/export-pdf', [ReportController::class, 'exportStokGudangPdf'])->name('laporan.stok-gudang.export-pdf');
+    Route::get('/laporan/pengajuan', [ReportController::class, 'pengajuan'])->name('laporan.pengajuan');
+    Route::get('/laporan/pengajuan/export-excel', [ReportController::class, 'exportPengajuanExcel'])->name('laporan.pengajuan.export-excel');
+    Route::get('/laporan/pengajuan/export-pdf', [ReportController::class, 'exportPengajuanPdf'])->name('laporan.pengajuan.export-pdf');
+});
+
+// Pengajuan (authenticated users)
+Route::middleware('auth')->group(function () {
+    Route::get('/pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
+    Route::post('/pengajuan/from-cart', [PengajuanController::class, 'fromCart'])->name('pengajuan.fromCart');
+    Route::post('/pengajuan', [PengajuanController::class, 'store'])->name('pengajuan.store');
+    Route::get('/pengajuan/list', [PengajuanController::class, 'list'])->name('pengajuan.list');
+    Route::get('/pengajuan/{id}/detail', [PengajuanController::class, 'show'])->name('pengajuan.show');
+    Route::get('/pengajuan/{id}/details', [PengajuanController::class, 'getDetails'])->name('pengajuan.getDetails');
+    Route::post('/pengajuan/{id}/approve', [PengajuanController::class, 'approve'])->name('pengajuan.approve');
+    Route::post('/pengajuan/{id}/reject', [PengajuanController::class, 'reject'])->name('pengajuan.reject');
 });
 
 // Authentication routes

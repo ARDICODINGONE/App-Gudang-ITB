@@ -21,7 +21,7 @@ class LoginController extends Controller
         }
 
 
-        return back()->with('error', 'Login gagal');
+        return back()->with('error', 'Username atau password salah');
     }
 
 

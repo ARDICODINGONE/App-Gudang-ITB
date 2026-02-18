@@ -6,10 +6,19 @@
     <div class="container-fluid py-4">
         <div class="row mb-4">
             <div class="col-12">
-                <h1 class="h3 text-dark fw-bold">
-                    <i class="ri-bar-chart-line me-2"></i>Laporan Sistem
-                </h1>
-                <p class="text-muted">Kelola dan lihat laporan stok, barang masuk, barang keluar, dan pengajuan</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 text-dark fw-bold">
+                            <i class="ri-bar-chart-line me-2"></i>Laporan Sistem
+                        </h1>
+                        <p class="text-muted">Kelola dan lihat laporan stok, barang masuk, barang keluar, dan pengajuan</p>
+                    </div>
+                    <div>
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="ri-arrow-left-line me-1"></i>Kembali
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -65,6 +74,7 @@
                 </div>
             </div>
 
+            @if(auth()->user()->role === 'atasan')
             <!-- Laporan Pengajuan -->
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100 transition-card" style="cursor: pointer;"
@@ -81,6 +91,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Laporan Riwayat Pengajuan -->
             <div class="col-md-6 col-lg-3">

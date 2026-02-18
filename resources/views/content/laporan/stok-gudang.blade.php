@@ -15,13 +15,15 @@
                         <p class="text-muted small mt-1">Lihat detail stok barang di setiap gudang</p>
                     </div>
                     <div class="d-flex gap-2">
+                        @if(auth()->user()->role === 'atasan')
                         <a href="{{ route('laporan.stok-gudang.export-excel', request()->query()) }}" class="btn btn-outline-success">
                             <i class="ri-file-excel-line me-1"></i>Export Excel
                         </a>
                         <a href="{{ route('laporan.stok-gudang.export-pdf', request()->query()) }}" class="btn btn-outline-danger">
                             <i class="ri-file-pdf-line me-1"></i>Export PDF
                         </a>
-                        <a href="{{ route('laporan.index') }}" class="btn btn-outline-secondary">
+                        @endif
+                        <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
                             <i class="ri-arrow-left-line me-1"></i>Kembali
                         </a>
                     </div>

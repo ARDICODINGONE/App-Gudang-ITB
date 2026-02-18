@@ -264,9 +264,10 @@ class PengajuanController extends Controller
         $user = Auth::user();
         $isApprover = $user && $user->role === 'approval';
         $isAdmin = $user && $user->role === 'atasan';
+        $isPetugas = $user && $user->role === 'petugas';
 
-        if ($isApprover || $isAdmin) {
-            // Approval/Atasan: Show all pengajuan
+        if ($isApprover || $isAdmin || $isPetugas) {
+            // Approval/Atasan/Petugas: Show all pengajuan
             $query = DB::table('pengajuan')
                 ->leftJoin('users as u', 'pengajuan.user_id', '=', 'u.id')
                 ->leftJoin('gudang as g', 'pengajuan.kode_gudang', '=', 'g.kode_gudang')
@@ -275,6 +276,11 @@ class PengajuanController extends Controller
             // Filter by gudang
             if ($request->filled('kode_gudang')) {
                 $query->where('pengajuan.kode_gudang', $request->kode_gudang);
+            }
+            
+            // Filter by status
+            if ($request->filled('status')) {
+                $query->where('pengajuan.status', $request->status);
             }
             
             // Filter by dari tanggal
@@ -288,6 +294,12 @@ class PengajuanController extends Controller
             }
             
             $items = $query->orderBy('pengajuan.created_at', 'desc')->paginate(20);
+            
+            // Load details to count total items
+            $items->getCollection()->each(function($pengajuan) {
+                $pengajuan->total_items = DB::table('pengajuan_detail')->where('pengajuan_id', $pengajuan->id)->count();
+            });
+            
             $view = 'content.pengajuan.list-approval';
         } else {
             // Regular user: Show only their own pengajuan
@@ -316,13 +328,14 @@ class PengajuanController extends Controller
 
         // Authorization: User bisa lihat jika:
         // 1. Dia yang buat pengajuan (user_id sama)
-        // 2. Dia adalah approval atau atasan
+        // 2. Dia adalah approval, atasan, atau petugas
         $user = Auth::user();
         $isApprover = $user && $user->role === 'approval';
         $isAdmin = $user && $user->role === 'atasan';
+        $isPetugas = $user && $user->role === 'petugas';
         $isPengaju = $user && $pengajuan->user_id == $user->id;
 
-        if (!$isApprover && !$isAdmin && !$isPengaju) {
+        if (!$isApprover && !$isAdmin && !$isPetugas && !$isPengaju) {
             abort(403, 'Anda tidak memiliki akses ke pengajuan ini');
         }
 
@@ -350,9 +363,10 @@ class PengajuanController extends Controller
         $user = Auth::user();
         $isApprover = $user && $user->role === 'approval';
         $isAdmin = $user && $user->role === 'atasan';
+        $isPetugas = $user && $user->role === 'petugas';
         $isPengaju = $user && $pengajuan->user_id == $user->id;
 
-        if (!$isApprover && !$isAdmin && !$isPengaju) {
+        if (!$isApprover && !$isAdmin && !$isPetugas && !$isPengaju) {
             return response()->json(['error' => 'Akses ditolak'], 403);
         }
 
