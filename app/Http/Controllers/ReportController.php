@@ -474,7 +474,7 @@ class ReportController extends Controller
         $query = Pengajuan::with(['user', 'details.barang', 'gudang']);
         
         // Kontrol akses berdasarkan role
-        if ($user && $user->role !== 'admin' && $user->role !== 'supervisor') {
+        if ($user && $user->role !== 'admin' && $user->role !== 'petugas') {
             // User biasa hanya bisa melihat pengajuan mereka sendiri
             $query->where('user_id', $user->id);
         }
@@ -493,8 +493,8 @@ class ReportController extends Controller
             $query->where('status', $request->query('status'));
         }
 
-        // Filter by user (hanya untuk admin/supervisor)
-        if ($request->query('user') && ($user->role === 'admin' || $user->role === 'supervisor')) {
+        // Filter by user (hanya untuk admin/petugas)
+        if ($request->query('user') && ($user->role === 'admin' || $user->role === 'petugas')) {
             $query->where('user_id', $request->query('user'));
         }
         
@@ -505,7 +505,7 @@ class ReportController extends Controller
         
         // Get users untuk dropdown (hanya untuk admin)
         $users = [];
-        if ($user && ($user->role === 'admin' || $user->role === 'supervisor')) {
+        if ($user && ($user->role === 'admin' || $user->role === 'petugas')) {
             $users = \App\Models\User::orderBy('nama')->get();
         }
         
@@ -519,7 +519,7 @@ class ReportController extends Controller
         $query = Pengajuan::with(['user', 'details.barang', 'gudang']);
         
         // Kontrol akses
-        if ($user && $user->role !== 'admin' && $user->role !== 'supervisor') {
+        if ($user && $user->role !== 'admin' && $user->role !== 'petugas') {
             $query->where('user_id', $user->id);
         }
         
@@ -532,7 +532,7 @@ class ReportController extends Controller
         if ($request->query('status')) {
             $query->where('status', $request->query('status'));
         }
-        if ($request->query('user') && ($user->role === 'admin' || $user->role === 'supervisor')) {
+        if ($request->query('user') && ($user->role === 'admin' || $user->role === 'petugas')) {
             $query->where('user_id', $request->query('user'));
         }
 
@@ -617,7 +617,7 @@ class ReportController extends Controller
         $query = Pengajuan::with(['user', 'details.barang', 'gudang']);
         
         // Kontrol akses
-        if ($user && $user->role !== 'admin' && $user->role !== 'supervisor') {
+        if ($user && $user->role !== 'admin' && $user->role !== 'petugas') {
             $query->where('user_id', $user->id);
         }
         
@@ -630,7 +630,7 @@ class ReportController extends Controller
         if ($request->query('status')) {
             $query->where('status', $request->query('status'));
         }
-        if ($request->query('user') && ($user->role === 'admin' || $user->role === 'supervisor')) {
+        if ($request->query('user') && ($user->role === 'admin' || $user->role === 'petugas')) {
             $query->where('user_id', $request->query('user'));
         }
 

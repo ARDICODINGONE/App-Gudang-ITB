@@ -2,7 +2,7 @@
 
 @section('content')
     @auth
-    @if(auth()->check() && (auth()->user()->role === 'atasan' || auth()->user()->role === 'admin' || auth()->user()->role === 'petugas'))
+    @if(auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->role === 'petugas'))
     <div class="container-fluid bg-light py-3">
         <div class="container">
             <div class="row g-3 justify-content-center">

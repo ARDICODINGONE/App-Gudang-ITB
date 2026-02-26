@@ -179,7 +179,7 @@
         </div>
       </div>
 
-      @if(auth()->user()->role === 'atasan')
+      @if(auth()->user()->role === 'admin')
         <div class="col-md-6 col-lg-4 col-xl-3">
           <div class="laporan-card">
             <div class="laporan-icon yellow"><i class="bi bi-card-checklist"></i></div>

@@ -12,8 +12,8 @@ class NotificationHelper
      */
     public static function notifyApproversOnPengajuanSubmitted($pengajuan)
     {
-        // Get all users with approval/atasan/admin role
-        $approvers = User::whereIn('role', ['approval', 'atasan', 'admin'])->get();
+        // Get all users with approval/admin/admin role
+        $approvers = User::whereIn('role', ['approval', 'admin'])->get();
 
         $title = 'Pengajuan Barang Baru';
         $message = 'Ada pengajuan barang baru dari ' . ($pengajuan->user->nama ?? 'User');

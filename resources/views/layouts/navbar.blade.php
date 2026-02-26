@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
@@ -127,7 +127,7 @@
                     <i class="fas fa-paper-plane"></i>
                 </a>
                 @auth
-                @if(method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('admin'))
+                @if(auth()->user()->role === 'admin' || auth()->user()->role === 'petugas')
                 <a href="{{ url('/user') }}" class="nav-action-icon {{ Request::is('user*') ? 'active' : '' }}" title="User">
                     <i class="fas fa-user"></i>
                 </a>
@@ -157,10 +157,9 @@
                             <div class="user-role">
                                 @php
                                 $role = 'Member';
-                                if (method_exists(auth()->user(), 'hasRole')) {
-                                    if (auth()->user()->hasRole('admin')) $role = 'Administrator';
-                                    elseif (auth()->user()->hasRole('staff')) $role = 'Staff';
-                                }
+                                if (auth()->user()->role === 'admin') $role = 'Administrator';
+                                elseif (auth()->user()->role === 'staff') $role = 'Staff';
+                                elseif (auth()->user()->role === 'approval') $role = 'Approval';
                                 @endphp
                                 {{ $role }}
                             </div>
@@ -172,12 +171,6 @@
                             <div class="user-name">{{ auth()->user()->nama ?? auth()->user()->name ?? 'User' }}</div>
                             <div class="user-email">{{ auth()->user()->email ?? 'user@example.com' }}</div>
                         </div>
-                        @if($role === 'Administrator')
-                        <div class="dropdown-divider"></div>
-                        <a href="{{ route('admin.dashboard') ?? '#' }}" class="dropdown-item">
-                            <i class="fas fa-shield-alt"></i><span>Admin Dashboard</span>
-                        </a>
-                        @endif
                         <div class="dropdown-divider"></div>
                         <a href="{{ route('logout') }}" class="dropdown-item dropdown-logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="fas fa-sign-out-alt"></i><span>Keluar</span>

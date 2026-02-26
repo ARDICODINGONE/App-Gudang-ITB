@@ -19,7 +19,7 @@ class AdminMiddleware
             return redirect()->route('login.show')->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        if (auth()->user()->role !== 'atasan') {
+        if (auth()->user()->role !== 'admin') {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk admin.');
         }
 

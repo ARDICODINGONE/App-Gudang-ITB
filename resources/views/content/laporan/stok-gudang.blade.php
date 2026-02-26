@@ -94,7 +94,7 @@
         <p>Lihat detail stok barang di setiap gudang.</p>
       </div>
       <div class="d-flex flex-wrap gap-2">
-        @if(auth()->user()->role === 'atasan')
+        @if(auth()->user()->role === 'admin')
           <a href="{{ route('laporan.stok-gudang.export-excel', request()->query()) }}" class="btn btn-sm btn-light text-success fw-semibold">
             <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
           </a>

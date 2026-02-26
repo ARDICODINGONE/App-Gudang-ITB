@@ -39,8 +39,6 @@
                 <option value="user">User</option>
                 <option value="petugas">Petugas</option>
                 <option value="approval">Approval</option>
-                <option value="supervisor">Supervisor</option>
-                <option value="atasan">Atasan</option>
                 <option value="admin">Admin</option>
               </select>
             </div>

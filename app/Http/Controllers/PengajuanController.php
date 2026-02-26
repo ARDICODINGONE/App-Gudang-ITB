@@ -263,7 +263,7 @@ class PengajuanController extends Controller
     {
         $user = Auth::user();
         $isApprover = $user && $user->role === 'approval';
-        $isAdmin = $user && $user->role === 'atasan';
+        $isAdmin = $user && $user->role === 'admin';
         $isPetugas = $user && $user->role === 'petugas';
 
         if ($isApprover || $isAdmin || $isPetugas) {
@@ -328,10 +328,10 @@ class PengajuanController extends Controller
 
         // Authorization: User bisa lihat jika:
         // 1. Dia yang buat pengajuan (user_id sama)
-        // 2. Dia adalah approval, atasan, atau petugas
+        // 2. Dia adalah approval, admin, atau petugas
         $user = Auth::user();
         $isApprover = $user && $user->role === 'approval';
-        $isAdmin = $user && $user->role === 'atasan';
+        $isAdmin = $user && $user->role === 'admin';
         $isPetugas = $user && $user->role === 'petugas';
         $isPengaju = $user && $pengajuan->user_id == $user->id;
 
@@ -362,7 +362,7 @@ class PengajuanController extends Controller
         // Authorization check
         $user = Auth::user();
         $isApprover = $user && $user->role === 'approval';
-        $isAdmin = $user && $user->role === 'atasan';
+        $isAdmin = $user && $user->role === 'admin';
         $isPetugas = $user && $user->role === 'petugas';
         $isPengaju = $user && $pengajuan->user_id == $user->id;
 

@@ -19,7 +19,7 @@ class PetugasMiddleware
             return redirect()->route('login.show')->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        if (!in_array(auth()->user()->role, ['petugas', 'atasan'])) {
+        if (!in_array(auth()->user()->role, ['petugas', 'admin'])) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk petugas atau admin.');
         }
 

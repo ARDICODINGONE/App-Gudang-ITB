@@ -46,9 +46,9 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate([
             'username' => 'admin'
         ], [
-            'nama' => 'Atasan',
+            'nama' => 'Admin',
             'password' => Hash::make('admin123'),
-            'role' => 'atasan'
+            'role' => 'admin'
         ]);
 
         User::updateOrCreate([

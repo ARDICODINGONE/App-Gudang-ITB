@@ -49,10 +49,10 @@ class TestNotificationSystem extends Command
         
         // Get users
         $pengaju = User::where('role', 'member')->orWhereNull('role')->first();
-        $approver = User::whereIn('role', ['approval', 'atasan', 'admin'])->first();
+        $approver = User::whereIn('role', ['approval', 'admin'])->first();
 
         if (!$pengaju || !$approver) {
-            $this->error('❌ Minimal perlu 1 user dengan role member dan 1 user dengan role approval/atasan/admin');
+            $this->error('❌ Minimal perlu 1 user dengan role member dan 1 user dengan role approval/admin');
             return;
         }
 
@@ -78,7 +78,7 @@ class TestNotificationSystem extends Command
     private function testCreateNotification($pengaju = null, $approver = null)
     {
         if (!$pengaju) $pengaju = User::first();
-        if (!$approver) $approver = User::whereIn('role', ['approval', 'atasan', 'admin'])->first();
+        if (!$approver) $approver = User::whereIn('role', ['approval', 'admin'])->first();
 
         $this->info('📝 Test 1: Create Pengajuan & Notify Approvers');
 

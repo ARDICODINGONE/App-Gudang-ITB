@@ -116,11 +116,15 @@
           <h5 class="mb-0 text-white">Daftar Gudang</h5>
           <p class="gudang-subtitle">Kelola lokasi penyimpanan barang secara terstruktur.</p>
         </div>
+        @auth
+        @if(auth()->user() && in_array(auth()->user()->role, ['admin', 'petugas']))
         <div>
           <button type="button" class="btn btn-sm btn-light text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#modalTambahGudang">
             <i class="bi bi-plus-lg me-1"></i>Tambah Gudang
           </button>
         </div>
+        @endif
+        @endauth
       </div>
 
       <div class="card-body p-3 p-md-4">
@@ -154,7 +158,7 @@
 
                 <div class="mt-auto">
                   @auth
-                    @if(auth()->user() && in_array(auth()->user()->role, ['atasan', 'admin', 'petugas']))
+                    @if(auth()->user() && in_array(auth()->user()->role, ['admin', 'petugas']))
                       <div class="gudang-actions mb-2">
                         <a class="btn btn-sm btn-outline-primary" href="javascript:void(0);"
                           data-route="{{ route('gudang.update', $gudang->kode_gudang) }}"
