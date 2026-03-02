@@ -47,14 +47,14 @@
           <div class="row">
             <div class="col mb-3">
               <label class="form-label">Jumlah</label>
-              <input type="number" id="edit_jumlah" name="jumlah" class="form-control" min="1" readonly required>
+              <input type="number" id="edit_jumlah" name="jumlah" class="form-control" min="1"  required>
             </div>
           </div>
 
           <div class="row">
             <div class="col mb-3">
               <label class="form-label">Tanggal</label>
-              <input type="date" id="edit_tanggal" name="tanggal" class="form-control" required>
+              <input type="date" id="edit_tanggal" name="tanggal" class="form-control" readonly required>
             </div>
           </div>
         </div>

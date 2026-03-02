@@ -171,11 +171,16 @@
                   <td>
                     <span class="bm-no">{{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}</span>
                   </td>
-                  <td class="fw-semibold">{{ optional($item->barang)->nama_barang ?? '-' }}</td>
+                  <td>
+                    <div class="fw-semibold">{{ optional($item->barang)->nama_barang ?? '-' }}</div>
+                    <small class="text-muted">
+                      {{ optional($item->barang)->deskripsi ? \Illuminate\Support\Str::limit(optional($item->barang)->deskripsi, 80) : '-' }}
+                    </small>
+                  </td>
                   <td>{{ optional($item->gudang)->nama_gudang ?? '-' }}</td>
                   <td class="bm-jumlah">{{ $item->jumlah }}</td>
                   <td class="bm-tanggal">{{ $item->tanggal }}</td>
-                  <td class="bm-user">{{ auth()->user()->nama ?? auth()->user()->username }}</td>
+                  <td class="bm-user">{{ optional($item->user)->nama ?? optional($item->user)->username ?? '-' }}</td>
                   <td>
                     <div class="bm-aksi">
                       <a class="btn btn-sm btn-outline-primary" href="javascript:void(0);"

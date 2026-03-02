@@ -40,11 +40,28 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $user->update([
+        // validate; password not required during edit
+        $rules = [
+            'nama'     => 'required|string|max:100',
+            'username' => 'required|string|max:50|unique:users,username,' . $user->id,
+            'role'     => 'required',
+        ];
+        if ($request->filled('password')) {
+            $rules['password'] = 'string|min:4';
+        }
+        $request->validate($rules);
+
+        $data = [
             'nama'     => $request->nama,
             'username' => $request->username,
             'role'     => $request->role,
-        ]);
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
 
         return redirect()->back()->with('success', 'User berhasil diupdate');
     }

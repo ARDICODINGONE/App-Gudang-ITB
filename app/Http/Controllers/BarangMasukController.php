@@ -8,6 +8,8 @@ use App\Models\Barang;
 use App\Models\Gudang;
 use App\Models\Stok;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
@@ -42,46 +44,88 @@ class BarangMasukController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'id_barang' => 'required|exists:barang,id',
+        $idBarangInput = $request->input('id_barang');
+        $jumlahInput = $request->input('jumlah');
+
+        $idBarangList = is_array($idBarangInput) ? array_values($idBarangInput) : [$idBarangInput];
+        $jumlahList = is_array($jumlahInput) ? array_values($jumlahInput) : [$jumlahInput];
+
+        $validator = Validator::make([
+            'kode_gudang' => $request->input('kode_gudang'),
+            'tanggal' => $request->input('tanggal'),
+            'id_barang' => $idBarangList,
+            'jumlah' => $jumlahList,
+        ], [
             'kode_gudang' => 'required|exists:gudang,kode_gudang',
-            'jumlah' => 'required|integer|min:1',
             'tanggal' => 'required|date',
+            'id_barang' => 'required|array|min:1',
+            'id_barang.*' => 'required|distinct|exists:barang,id',
+            'jumlah' => 'required|array|min:1',
+            'jumlah.*' => 'required|integer|min:1',
         ]);
 
-        $created = BarangMasuk::create([
-            'id_barang' => $request->id_barang,
-            'kode_gudang' => $request->kode_gudang,
-            'jumlah' => $request->jumlah,
-            'tanggal' => $request->tanggal,
-            'id_users' => Auth::id() ?? 1,
-        ]);
+        $validator->after(function ($validator) use ($idBarangList, $jumlahList) {
+            if (count($idBarangList) !== count($jumlahList)) {
+                $validator->errors()->add('jumlah', 'Jumlah item barang dan jumlah harus sama.');
+            }
+        });
 
-        // Update stok: increment existing stok for the gudang, or create a new stok record
-        $existing = Stok::where('id_barang', $request->id_barang)
-            ->where('kode_gudang', $request->kode_gudang)
-            ->first();
-
-        if ($existing) {
-            $existing->increment('stok', (int) $request->jumlah);
-        } else {
-            Stok::create([
-                'id_barang' => $request->id_barang,
-                'kode_gudang' => $request->kode_gudang,
-                'stok' => (int) $request->jumlah,
-            ]);
+        if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal.',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+            return redirect()->back()->withErrors($validator)->withInput();
         }
+
+        $createdIds = [];
+
+        DB::transaction(function () use ($idBarangList, $jumlahList, $request, &$createdIds) {
+            foreach ($idBarangList as $i => $idBarang) {
+                $jumlah = (int) $jumlahList[$i];
+
+                $created = BarangMasuk::create([
+                    'id_barang' => $idBarang,
+                    'kode_gudang' => $request->kode_gudang,
+                    'jumlah' => $jumlah,
+                    'tanggal' => $request->tanggal,
+                    'id_users' => Auth::id() ?? 1,
+                ]);
+
+                $createdIds[] = $created->id;
+
+                // Update stok: increment existing stok for the gudang, or create a new stok record
+                $existing = Stok::where('id_barang', $idBarang)
+                    ->where('kode_gudang', $request->kode_gudang)
+                    ->first();
+
+                if ($existing) {
+                    $existing->increment('stok', $jumlah);
+                } else {
+                    Stok::create([
+                        'id_barang' => $idBarang,
+                        'kode_gudang' => $request->kode_gudang,
+                        'stok' => $jumlah,
+                    ]);
+                }
+            }
+        });
 
         // If request expects JSON (AJAX), return JSON so client fetch can proceed reliably
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'barang_masuk_id' => $created->id,
+                'barang_masuk_ids' => $createdIds,
+                'created_count' => count($createdIds),
                 'kode_gudang' => $request->kode_gudang,
             ], 201);
         }
 
-        return redirect()->route('barang-masuk-index')->with('success', 'Barang masuk berhasil ditambahkan!');
+        $countCreated = count($createdIds);
+        return redirect()->route('barang-masuk-index')->with('success', "{$countCreated} barang masuk berhasil ditambahkan!");
     }
 
     public function update(Request $request, BarangMasuk $barang_masuk)

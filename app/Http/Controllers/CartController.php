@@ -28,26 +28,40 @@ class CartController extends Controller
         $page = $request->query('page', 1);
         $perPage = 5;
         
+        $preferredGudang = $request->query('gudang');
+
         $cartItemsQuery = $cart->items()->with('barang.stok');
         $totalItems = $cartItemsQuery->count();
         
         // Get paginated items
         $cartItems = $cartItemsQuery->paginate($perPage, ['*'], 'page', $page);
         
-        $items = $cartItems->getCollection()->map(function ($it) {
+        $items = $cartItems->getCollection()->map(function ($it) use ($preferredGudang) {
             // Calculate total stock for this barang across all gudang
             $totalStock = $it->barang->stok()->sum('stok') ?? 0;
             
-            // Get list of gudang names where this barang is in stock
-            $gudangList = $it->barang->stok()
-                ->where('stok', '>', 0)
-                ->with('gudang')
-                ->get()
-                ->map(function ($s) {
-                    return $s->gudang->nama_gudang ?? null;
-                })
-                ->filter()
-                ->toArray();
+            $gudangList = [];
+
+            // If a preferred gudang is provided and has stock for this barang, prefer it
+            if ($preferredGudang) {
+                $s = $it->barang->stok()->where('kode_gudang', $preferredGudang)->where('stok', '>', 0)->with('gudang')->first();
+                if ($s && $s->gudang) {
+                    $gudangList[] = $s->gudang->nama_gudang;
+                }
+            }
+
+            // Fallback: list all gudang names that have stock
+            if (empty($gudangList)) {
+                $gudangList = $it->barang->stok()
+                    ->where('stok', '>', 0)
+                    ->with('gudang')
+                    ->get()
+                    ->map(function ($s) {
+                        return $s->gudang->nama_gudang ?? null;
+                    })
+                    ->filter()
+                    ->toArray();
+            }
 
             return [
                 'id' => $it->id,

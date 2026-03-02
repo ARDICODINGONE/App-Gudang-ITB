@@ -1,151 +1,93 @@
-<!-- Footer -->
-
 <style>
-    /* Custom styles for footer */
-.footer-section {
-    background: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)), 
-                url('https://images.unsplash.com/photo-1553413077-190dd305871c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
-.footer-section .btn-social {
-    width: 40px;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 40px;
-    transition: all 0.3s;
-}
-
-.footer-section .btn-social:hover {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    transform: translateY(-3px);
-}
-
-.footer-section a.text-white-50:hover {
-    color: #fff !important;
-    padding-left: 5px;
-    transition: all 0.3s;
-}
-
-.footer-section .bg-primary {
-    background-color: #0d6efd !important;
-}
-
-/* Hover effects for contact items */
-.footer-section .d-flex.mb-3:hover .bg-primary {
-    background-color: #0b5ed7 !important;
-    transform: scale(1.1);
-    transition: all 0.3s;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .footer-section .text-center.text-md-start,
-    .footer-section .text-center.text-md-end {
-        text-align: center !important;
+    .gd-footer {
+        width: 100%;
+        margin-top: 0;
+        background: linear-gradient(rgba(15, 23, 42, 0.86), rgba(15, 23, 42, 0.9)),
+            url('https://images.unsplash.com/photo-1553413077-190dd305871c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
     }
-    
-    .footer-section .d-flex.justify-content-md-end {
-        justify-content: center !important;
+
+    .gd-footer-main {
+        padding: 1rem 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
     }
-}
+
+    .gd-brand {
+        margin: 0;
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+    }
+
+    .gd-tagline {
+        margin: 0.1rem 0 0;
+        color: #cbd5e1;
+        font-size: 0.84rem;
+    }
+
+    .gd-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 1rem;
+    }
+
+    .gd-links a {
+        color: #dbeafe;
+        text-decoration: none;
+        font-size: 0.84rem;
+        font-weight: 600;
+    }
+
+    .gd-links a:hover {
+        color: #93c5fd;
+    }
+
+    .gd-footer-bottom {
+        border-top: 1px solid rgba(148, 163, 184, 0.25);
+        padding: 0.65rem 1.25rem;
+        font-size: 0.78rem;
+        color: #cbd5e1;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .gd-footer-main,
+        .gd-footer-bottom {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
 </style>
-<div class="container-fluid footer-section bg-dark py-5 wow fadeIn" data-wow-delay="0.2s">
-    <div class="container py-5">
-        <!-- Quick Contact Section -->
-        <div class="row g-5 mb-5">
-            <div class="col-lg-4">
-                <div class="mb-4">
-                    <a href="{{ url('/') }}" class="navbar-brand d-inline-block mb-3">
-                        <h2 class="display-5 text-white m-0"><span class="text-primary">Gudit</span></h2>
-                        <p class="text-white-50 m-0">Gudang Digital</p>
-                    </a>
-                    <p class="text-white-50 mb-4">
-                        Platform digital terpercaya untuk kebutuhan gudang dan logistik Anda. 
-                        Solusi penyimpanan modern dengan teknologi terkini.
-                    </p>
-                    <div class="d-flex pt-2">
-                        <a class="btn btn-outline-light btn-social me-2" href="#"><i class="fab fa-twitter"></i></a>
-                        <a class="btn btn-outline-light btn-social me-2" href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-outline-light btn-social me-2" href="#"><i class="fab fa-youtube"></i></a>
-                        <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-2 col-md-6">
-                <h5 class="text-white mb-4">Tautan Cepat</h5>
-                <div class="d-flex flex-column">
-                    <a class="text-white-50 mb-2" href="{{ url('/') }}"><i class="fa fa-angle-right me-2"></i>Beranda</a>
-                    <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right me-2"></i>Tentang Kami</a>
-                    <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right me-2"></i>Layanan</a>
-                    <a class="text-white-50 mb-2" href="{{ url('/cart') }}"><i class="fa fa-angle-right me-2"></i>Keranjang</a>
-                    <a class="text-white-50" href="#"><i class="fa fa-angle-right me-2"></i>Kontak</a>
-                </div>
-            </div>
-            
-            <div class="col-lg-2 col-md-6">
-                <h5 class="text-white mb-4">Gudang Kami</h5>
-                <div class="d-flex flex-column">
-                    <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right me-2"></i>Ganesha</a>
-                    <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right me-2"></i>Jatinangor</a>
-                    <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right me-2"></i>Cirebon</a>
-                </div>
-            </div>
-            
-            <div class="col-lg-4 col-md-12">
-                <h5 class="text-white mb-4">Kontak Kami</h5>
-                <div class="d-flex mb-3">
-                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                        <i class="fas fa-map-marker-alt text-white"></i>
-                    </div>
-                    <div class="ms-3">
-                        <h6 class="text-white mb-0">Alamat</h6>
-                        <p class="text-white-50 mb-0">Jl. Ganesha No. 10, Bandung, Indonesia</p>
-                    </div>
-                </div>
-                <div class="d-flex mb-3">
-                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                        <i class="fas fa-envelope text-white"></i>
-                    </div>
-                    <div class="ms-3">
-                        <h6 class="text-white mb-0">Email</h6>
-                        <p class="text-white-50 mb-0">info@gudit.com</p>
-                    </div>
-                </div>
-                <div class="d-flex">
-                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                        <i class="fa fa-phone-alt text-white"></i>
-                    </div>
-                    <div class="ms-3">
-                        <h6 class="text-white mb-0">Telepon</h6>
-                        <p class="text-white-50 mb-0">(+62) 22 1234 5678</p>
-                    </div>
-                </div>
-            </div>
+
+<footer class="gd-footer">
+    <div class="gd-footer-main">
+        <div>
+            <p class="gd-brand">GUDIT</p>
+            <p class="gd-tagline">Gudang Digital ITB - Institut Teknologi Bandung.</p>
         </div>
-        
-        <!-- Divider -->
-        <div class="border-top border-secondary pt-4">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                    <p class="text-white-50 mb-0">
-                        &copy; <a class="text-primary" href="{{ url('/') }}">Gudit - Gudang Digital</a>. 
-                        All Rights Reserved.
-                    </p>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <div class="d-flex justify-content-md-end justify-content-center">
-                        <a class="text-white-50 me-4" href="#">Kebijakan Privasi</a>
-                        <a class="text-white-50" href="#">Syarat & Ketentuan</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+        <nav class="gd-links">
+            <a href="{{ url('/') }}">Beranda</a>
+            <a href="{{ url('/pengajuan/list') }}">Pengajuan</a>
+            <a href="{{ url('/gudang') }}">Gudang</a>
+            <a href="{{ url('/laporan') }}">Laporan</a>
+        </nav>
     </div>
-</div>
+
+    <div class="gd-footer-bottom">
+        <span>&copy; {{ now()->year }} GUDIT</span>
+        <span>Inventory Management System</span>
+    </div>
+</footer>

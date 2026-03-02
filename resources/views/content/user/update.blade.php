@@ -25,7 +25,7 @@
             <div class="col mb-3">
               <label class="form-label">Password</label>
               <div class="input-group">
-                <input type="password" id="edit_password" name="password" class="form-control" required>
+                <input type="password" id="edit_password" name="password" class="form-control" placeholder="Kosongkan untuk tidak mengganti">
                 <button class="btn btn-outline-secondary" type="button" id="toggleEditPassword">
                   <i class="fa fa-eye"></i>
                 </button>

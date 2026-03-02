@@ -35,7 +35,7 @@
       <div class="d-flex flex-wrap gap-2">
         <a href="{{ route('laporan.riwayat-pengajuan.export-excel', request()->query()) }}" class="btn btn-sm btn-light text-success fw-semibold"><i class="bi bi-file-earmark-excel me-1"></i>Export Excel</a>
         <a href="{{ route('laporan.riwayat-pengajuan.export-pdf', request()->query()) }}" class="btn btn-sm btn-light text-danger fw-semibold"><i class="bi bi-file-earmark-pdf me-1"></i>Export PDF</a>
-        <a href="{{ route('laporan.index') }}" class="btn btn-sm btn-outline-light fw-semibold"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+        <a href="{{ url('/') }}" class="btn btn-sm btn-outline-light fw-semibold"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
       </div>
     </div>
 

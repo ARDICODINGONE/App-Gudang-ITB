@@ -80,6 +80,7 @@
                     <form id="form-ajukan" action="{{ route('pengajuan.fromCart') }}" method="POST">
                         @csrf
                         <input type="hidden" name="note" id="form-note" value="">
+                        <input type="hidden" name="gudang_id" id="form-gudang" value="">
                         <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm hover-top">
                             Ajukan <i class="fa fa-chevron-right ms-2"></i>
                         </button>
@@ -150,7 +151,9 @@
         const paginationWrapper = document.getElementById('pagination-wrapper');
 
         try {
-            const res = await fetch('/cart/items');
+            const lastGudang = localStorage.getItem('lastGudang') || '';
+                const url = '/cart/items' + (lastGudang ? ('?gudang=' + encodeURIComponent(lastGudang)) : '');
+                const res = await fetch(url);
             const payload = await res.json();
 
             // payload may be an array (legacy) or an object { items, note, pagination }
@@ -349,7 +352,9 @@
         const list = document.getElementById('cart-items');
 
         try {
-            const res = await fetch(`/cart/items?page=${page}`);
+            const lastGudang = localStorage.getItem('lastGudang') || '';
+        const url = '/cart/items?page=' + page + (lastGudang ? ('&gudang=' + encodeURIComponent(lastGudang)) : '');
+        const res = await fetch(url);
             const payload = await res.json();
 
             const cart = payload.items || [];
@@ -444,9 +449,15 @@
             
             // submit form via fetch to capture response
             const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const formData = new FormData(formAjukan);
-            
+
             try {
+                // include last selected gudang (if available) so pengajuan.fromCart can use it
+                const lastGudang = localStorage.getItem('lastGudang') || '';
+                const fg = document.getElementById('form-gudang');
+                if (fg) fg.value = lastGudang;
+
+                const formData = new FormData(formAjukan);
+
                 const res = await fetch(formAjukan.action, {
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': csrf },

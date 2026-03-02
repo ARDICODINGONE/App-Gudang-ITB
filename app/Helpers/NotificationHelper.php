@@ -44,7 +44,7 @@ class NotificationHelper
     /**
      * Create notification when pengajuan is approved (fully or partially)
      */
-    public static function notifyApprovalDecision($pengajuan, $approved = true, $totalApproved = 0, $totalRejected = 0)
+    public static function notifyApprovalDecision($pengajuan, $approved = true, $totalApproved = 0, $totalRejected = 0, $customMessage = null)
     {
         if (!$pengajuan->user_id) {
             return;
@@ -64,6 +64,11 @@ class NotificationHelper
             // Full rejection
             $message = 'Pengajuan barang Anda telah ditolak seluruhnya';
             $type = 'danger';
+        }
+
+        $customMessage = is_string($customMessage) ? trim($customMessage) : '';
+        if ($customMessage !== '') {
+            $message = $customMessage;
         }
         
         $detail = 'Kode Pengajuan: ' . $pengajuan->kode_pengajuan;

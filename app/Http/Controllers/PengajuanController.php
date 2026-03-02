@@ -176,7 +176,13 @@ class PengajuanController extends Controller
             return redirect('/cart')->with('error', 'Keranjang kosong.');
         }
 
-        // find gudang that has stock for all items (reuse index logic)
+        // prefer gudang provided by request (e.g. from cart page last selection)
+        $selectedGudang = null;
+        if ($request->filled('gudang_id')) {
+            $selectedGudang = $request->input('gudang_id');
+        }
+
+        // find gudang that has stock for all items (reuse index logic) if not provided
         $arrays = [];
         foreach ($cartItems as $it) {
             $guds = Stok::where('id_barang', $it->barang_id)
@@ -186,9 +192,7 @@ class PengajuanController extends Controller
                 ->toArray();
             $arrays[] = $guds;
         }
-
-        $selectedGudang = null;
-        if (!empty($arrays)) {
+        if (!$selectedGudang && !empty($arrays)) {
             $inter = array_shift($arrays);
             foreach ($arrays as $a) {
                 $inter = array_values(array_intersect($inter, $a));

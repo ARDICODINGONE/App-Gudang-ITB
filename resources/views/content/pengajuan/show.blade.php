@@ -1,292 +1,253 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $statusText = 'Ditolak';
+    $statusClass = 'status-rejected';
+    $statusIcon = 'fa-circle-xmark';
+
+    if ($pengajuan->status === 'pending') {
+        $statusText = 'Menunggu Persetujuan';
+        $statusClass = 'status-pending';
+        $statusIcon = 'fa-clock';
+    } elseif ($pengajuan->status === 'approved') {
+        $statusText = 'Disetujui';
+        $statusClass = 'status-approved';
+        $statusIcon = 'fa-circle-check';
+    } elseif ($pengajuan->status === 'partial_approved') {
+        $statusText = 'Sebagian Disetujui';
+        $statusClass = 'status-partial';
+        $statusIcon = 'fa-circle-exclamation';
+    }
+@endphp
+
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="mb-0">Detail Pengajuan</h3>
-            <small class="text-muted">{{ $pengajuan->kode_pengajuan ?? '-' }}</small>
+    <div class="detail-page">
+        <div class="detail-header mb-4">
+            <div>
+                <p class="detail-overline mb-1">Detail Pengajuan</p>
+                <h3 class="mb-1">{{ $pengajuan->kode_pengajuan ?? '-' }}</h3>
+                <span class="status-pill {{ $statusClass }}">
+                    <i class="fas {{ $statusIcon }} me-1"></i>{{ $statusText }}
+                </span>
+            </div>
+            <a href="{{ route('pengajuan.list') }}" class="btn btn-outline-secondary fw-semibold mt-3 mt-md-0">
+                <i class="fas fa-arrow-left me-1"></i>Kembali
+            </a>
         </div>
-        <a href="{{ route('pengajuan.list') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Kembali
-        </a>
-    </div>
 
-    <div class="row">
-        <!-- Left Column -->
-        <div class="col-lg-7">
-            <!-- Info Card -->
-            <div class="card mb-4 shadow-sm border-0">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        @if($pengajuan->status === 'pending')
-                            <span class="badge bg-warning text-dark">⏳ Menunggu Persetujuan</span>
-                        @elseif($pengajuan->status === 'approved')
-                            <span class="badge bg-success">✓ Disetujui</span>
-                        @else
-                            <span class="badge bg-danger">✗ Ditolak</span>
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card panel-card mb-4">
+                    <div class="panel-head">
+                        <h5 class="mb-0">Informasi Pengajuan</h5>
+                    </div>
+                    <div class="card-body p-3 p-md-4">
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-6">
+                                <p class="label mb-1">Gudang</p>
+                                <p class="value mb-0">{{ $pengajuan->gudang?->nama_gudang ?? $pengajuan->kode_gudang }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="label mb-1">Total Jumlah</p>
+                                <span class="qty-pill">{{ $pengajuan->jumlah }} item</span>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="label mb-1">Tanggal Pengajuan</p>
+                                <p class="value mb-0">{{ \Carbon\Carbon::parse($pengajuan->tanggal)->format('d M Y') }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="label mb-1">Dibuat</p>
+                                <p class="value mb-0">{{ \Carbon\Carbon::parse($pengajuan->created_at)->format('d M Y H:i') }}</p>
+                            </div>
+                        </div>
+
+                        @if($pengajuan->note)
+                        <div class="note-box mt-3">
+                            <p class="label mb-1">Catatan</p>
+                            <p class="mb-0 note-text">{{ $pengajuan->note }}</p>
+                        </div>
                         @endif
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <small class="text-muted d-block mb-1">Gudang</small>
-                            <strong class="fs-5">{{ $pengajuan->gudang?->nama_gudang ?? $pengajuan->kode_gudang }}</strong>
-                        </div>
-                        <div class="col-md-6">
-                            <small class="text-muted d-block mb-1">Total Jumlah</small>
-                            <strong class="fs-5 badge bg-primary">{{ $pengajuan->jumlah }} item</strong>
-                        </div>
                     </div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <small class="text-muted d-block mb-1">Tanggal Pengajuan</small>
-                            <strong>{{ \Carbon\Carbon::parse($pengajuan->tanggal)->format('d M Y') }}</strong>
-                        </div>
-                        <div class="col-md-6">
-                            <small class="text-muted d-block mb-1">Dibuat</small>
-                            <strong>{{ \Carbon\Carbon::parse($pengajuan->created_at)->format('d M Y H:i') }}</strong>
-                        </div>
+                <div class="card panel-card">
+                    <div class="panel-head d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Detail Barang yang Diajukan</h5>
                     </div>
-
-                    @if($pengajuan->note)
-                    <div class="alert alert-info mt-3 mb-0">
-                        <small><strong>Catatan:</strong> {{ $pengajuan->note }}</small>
+                    <div class="table-responsive">
+                        <table class="table table-professional align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width:70px;">No</th>
+                                    <th>Nama Barang</th>
+                                    <th class="text-end">Diajukan</th>
+                                    @if($pengajuan->status === 'approved' || $pengajuan->status === 'partial_approved')
+                                    <th class="text-end">Disetujui</th>
+                                    <th class="text-center">Status</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody id="detail-barang-tbody">
+                            </tbody>
+                        </table>
                     </div>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Detail Barang -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Detail Barang yang Diajukan</h5>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>No</th>
-                                <th>Nama Barang</th>
-                                <th class="text-end">Diajukan</th>
-                                @if($pengajuan->status === 'approved' || $pengajuan->status === 'partial_approved')
-                                <th class="text-end">Disetujui</th>
-                                <th class="text-center">Status</th>
-                                @endif
-                            </tr>
-                        </thead>
-                        <tbody id="detail-barang-tbody">
-                        </tbody>
-                    </table>
-                </div>
-                <div id="pengajuan-pagination-wrapper" style="display:none; padding: 1.5rem; border-top: 1px solid #dee2e6; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
-                    <nav aria-label="Page navigation">
-                        <ul id="pengajuan-pagination-list" class="pagination justify-content-center mb-0">
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Column -->
-        <div class="col-lg-5">
-            <!-- Pengaju Info Card -->
-            <div class="card mb-4 shadow-sm border-0">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Informasi Pengaju</h5>
-                </div>
-                <div class="card-body">
-                    @if($user_pengaju)
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="avatar-circle" style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 15px;">
-                            {{ strtoupper(substr($user_pengaju->nama ?? $user_pengaju->name ?? 'U', 0, 1)) }}
-                        </div>
-                        <div>
-                            <strong class="d-block">{{ $user_pengaju->nama ?? $user_pengaju->name ?? '-' }}</strong>
-                            <small class="text-muted">{{ $user_pengaju->username ?? '-' }}</small>
-                        </div>
-                    </div>
-                    @else
-                    <p class="text-muted mb-0">Informasi pengaju tidak tersedia</p>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Approval Actions - For Approver -->
-            @if($isApprover && $pengajuan->status === 'pending')
-            <div class="card border-warning shadow-sm">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">Aksi Persetujuan</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted small mb-3">Silakan tentukan jumlah barang yang akan disetujui untuk setiap item. Jumlah yang tidak disetujui akan otomatis ditolak.</p>
-
-                    <!-- Approval Details Form -->
-                    <form id="approval-form-{{ $pengajuan->id }}" method="POST" action="{{ route('pengajuan.approve', $pengajuan->id) }}" class="mb-3">
-                        @csrf
-                        <div class="table-responsive">
-                            <table class="table table-sm mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Barang</th>
-                                        <th class="text-center">Diajukan</th>
-                                        <th class="text-center">Disetujui</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="approval-barang-tbody">
-                                </tbody>
-                            </table>
-                        </div>
-                        <div id="approval-pagination-wrapper" style="display:none; padding: 1.5rem; border-top: 1px solid #dee2e6; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
-                            <nav aria-label="Page navigation">
-                                <ul id="approval-pagination-list" class="pagination justify-content-center mb-0">
-                                </ul>
-                            </nav>
-                        </div>
-
-                        <div class="mt-3 d-flex gap-2">
-                            <button type="button" class="btn btn-success flex-grow-1" onclick="submitApproval({{ $pengajuan->id }})">
-                                <i class="fas fa-check-circle"></i> Setujui
-                            </button>
-                            <button type="button" class="btn btn-danger flex-grow-1" onclick="askRejectAll({{ $pengajuan->id }})">
-                                <i class="fas fa-times-circle"></i> Tolak Semua
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            @elseif($isApprover && $pengajuan->status === 'approved')
-            <div class="card border-success shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Status Persetujuan</h5>
-                </div>
-                <div class="card-body text-center">
-                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
-                    <p class="mt-3 mb-0"><strong>Pengajuan Telah Disetujui</strong></p>
-                    <small class="text-muted d-block">Stok gudang sudah dikurangi sesuai pesanan</small>
-                </div>
-            </div>
-            @elseif($isApprover && $pengajuan->status === 'partial_approved')
-            <div class="card border-info shadow-sm">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Status Persetujuan Sebagian</h5>
-                </div>
-                <div class="card-body text-center">
-                    <i class="fas fa-exclamation-circle text-info" style="font-size: 3rem;"></i>
-                    <p class="mt-3 mb-0"><strong>Pengajuan Disetujui Sebagian</strong></p>
-                    <small class="text-muted d-block">Ada item yang disetujui dan ada yang ditolak</small>
-                </div>
-            </div>
-            @elseif($isApprover && $pengajuan->status === 'rejected')
-            <div class="card border-danger shadow-sm">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0">Status Penolakan</h5>
-                </div>
-                <div class="card-body text-center">
-                    <i class="fas fa-times-circle text-danger" style="font-size: 3rem;"></i>
-                    <p class="mt-3 mb-0"><strong>Pengajuan Telah Ditolak</strong></p>
-                    <small class="text-muted d-block">Silakan hubungi tim approval untuk informasi lebih lanjut</small>
-                </div>
-            </div>
-            @endif
-
-            <!-- Status Cards - For Pengaju -->
-            @if($isPengaju && $pengajuan->status === 'pending')
-            <div class="card border-info shadow-sm">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Status Pengajuan</h5>
-                </div>
-                <div class="card-body text-center">
-                    <i class="fas fa-hourglass-half text-info" style="font-size: 3rem;"></i>
-                    <p class="mt-3 mb-0"><strong>Menunggu Persetujuan</strong></p>
-                    <small class="text-muted d-block">Tim approval akan memproses pengajuan Anda segera</small>
-                </div>
-            </div>
-            @elseif($isPengaju && $pengajuan->status === 'approved')
-            <div class="card border-success shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Status Pengajuan</h5>
-                </div>
-                <div class="card-body text-center">
-                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
-                    <p class="mt-3 mb-0"><strong>Pengajuan Disetujui!</strong></p>
-                    <small class="text-muted d-block">Barang Anda sudah disiapkan untuk diambil</small>
-                </div>
-            </div>
-            @elseif($isPengaju && $pengajuan->status === 'partial_approved')
-            <div class="card border-info shadow-sm">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Status Pengajuan</h5>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <i class="fas fa-exclamation-circle text-info" style="font-size: 3rem;"></i>
-                        <p class="mt-3 mb-0"><strong>Pengajuan Disetujui Sebagian</strong></p>
-                    </div>
-                    <div class="alert alert-info mb-0">
-                        <small>Beberapa item disetujui, sementara item lainnya tidak tersedia. Lihat detail di atas untuk informasi lengkap.</small>
+                    <div id="pengajuan-pagination-wrapper" class="pagination-wrap" style="display:none;">
+                        <nav aria-label="Page navigation">
+                            <ul id="pengajuan-pagination-list" class="pagination justify-content-center mb-0"></ul>
+                        </nav>
                     </div>
                 </div>
             </div>
-            @elseif($isPengaju && $pengajuan->status === 'rejected')
-            <div class="card border-danger shadow-sm">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0">Status Pengajuan</h5>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <i class="fas fa-times-circle text-danger" style="font-size: 3rem;"></i>
-                        <p class="mt-3 mb-0"><strong>Pengajuan Ditolak</strong></p>
+
+            <div class="col-lg-5">
+                <div class="card panel-card mb-4">
+                    <div class="panel-head">
+                        <h5 class="mb-0">Informasi Pengaju</h5>
                     </div>
-                    @if($pengajuan->rejection_reason)
-                    <div class="alert alert-danger mb-0">
-                        <small><strong>Alasan:</strong> {{ $pengajuan->rejection_reason }}</small>
+                    <div class="card-body p-3 p-md-4">
+                        @if($user_pengaju)
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-circle">
+                                {{ strtoupper(substr($user_pengaju->nama ?? $user_pengaju->name ?? 'U', 0, 1)) }}
+                            </div>
+                            <div>
+                                <p class="value mb-0">{{ $user_pengaju->nama ?? $user_pengaju->name ?? '-' }}</p>
+                                <p class="text-muted mb-0">{{ $user_pengaju->username ?? '-' }}</p>
+                            </div>
+                        </div>
+                        @else
+                        <p class="text-muted mb-0">Informasi pengaju tidak tersedia</p>
+                        @endif
                     </div>
-                    @endif
                 </div>
+
+                @if($isApprover && $pengajuan->status === 'pending')
+                <div class="card panel-card panel-accent-warning">
+                    <div class="panel-head">
+                        <h5 class="mb-0">Aksi Persetujuan</h5>
+                    </div>
+                    <div class="card-body p-3 p-md-4">
+                        <p class="text-muted small mb-3">Tentukan jumlah barang yang disetujui untuk setiap item. Sisa jumlah otomatis ditolak.</p>
+
+                        <form id="approval-form-{{ $pengajuan->id }}" method="POST" action="{{ route('pengajuan.approve', $pengajuan->id) }}" class="mb-3">
+                            @csrf
+                            <div class="table-responsive">
+                                <table class="table table-sm table-professional mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Barang</th>
+                                            <th class="text-center">Diajukan</th>
+                                            <th class="text-center">Disetujui</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="approval-barang-tbody">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="approval-pagination-wrapper" class="pagination-wrap" style="display:none;">
+                                <nav aria-label="Page navigation">
+                                    <ul id="approval-pagination-list" class="pagination justify-content-center mb-0"></ul>
+                                </nav>
+                            </div>
+
+                            <div class="mt-3 d-flex gap-2">
+                                <button type="button" class="btn btn-success flex-grow-1" onclick="openDecisionModal('approve', {{ $pengajuan->id }})">
+                                    <i class="fas fa-check-circle me-1"></i>Setujui
+                                </button>
+                                <button type="button" class="btn btn-danger flex-grow-1" onclick="openDecisionModal('reject', {{ $pengajuan->id }})">
+                                    <i class="fas fa-times-circle me-1"></i>Tolak Semua
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                @elseif($isApprover && $pengajuan->status === 'approved')
+                <div class="card panel-card panel-accent-success text-center">
+                    <div class="panel-head"><h5 class="mb-0">Status Persetujuan</h5></div>
+                    <div class="card-body p-4">
+                        <i class="fas fa-check-circle status-icon text-success"></i>
+                        <p class="mt-3 mb-0 fw-semibold">Pengajuan Telah Disetujui</p>
+                        <small class="text-muted d-block">Stok gudang sudah dikurangi sesuai pesanan</small>
+                    </div>
+                </div>
+                @elseif($isApprover && $pengajuan->status === 'partial_approved')
+                <div class="card panel-card panel-accent-info text-center">
+                    <div class="panel-head"><h5 class="mb-0">Status Persetujuan</h5></div>
+                    <div class="card-body p-4">
+                        <i class="fas fa-circle-exclamation status-icon text-info"></i>
+                        <p class="mt-3 mb-0 fw-semibold">Pengajuan Disetujui Sebagian</p>
+                        <small class="text-muted d-block">Sebagian item disetujui dan sebagian ditolak</small>
+                    </div>
+                </div>
+                @elseif($isApprover && $pengajuan->status === 'rejected')
+                <div class="card panel-card panel-accent-danger text-center">
+                    <div class="panel-head"><h5 class="mb-0">Status Persetujuan</h5></div>
+                    <div class="card-body p-4">
+                        <i class="fas fa-times-circle status-icon text-danger"></i>
+                        <p class="mt-3 mb-0 fw-semibold">Pengajuan Telah Ditolak</p>
+                        <small class="text-muted d-block">Silakan hubungi tim approval untuk informasi lebih lanjut</small>
+                    </div>
+                </div>
+                @endif
+
+                @if($isPengaju && $pengajuan->status === 'pending')
+                <div class="card panel-card panel-accent-info text-center">
+                    <div class="panel-head"><h5 class="mb-0">Status Pengajuan</h5></div>
+                    <div class="card-body p-4">
+                        <i class="fas fa-hourglass-half status-icon text-info"></i>
+                        <p class="mt-3 mb-0 fw-semibold">Menunggu Persetujuan</p>
+                        <small class="text-muted d-block">Tim approval akan memproses pengajuan Anda segera</small>
+                    </div>
+                </div>
+                @elseif($isPengaju && $pengajuan->status === 'approved')
+                <div class="card panel-card panel-accent-success text-center">
+                    <div class="panel-head"><h5 class="mb-0">Status Pengajuan</h5></div>
+                    <div class="card-body p-4">
+                        <i class="fas fa-check-circle status-icon text-success"></i>
+                        <p class="mt-3 mb-0 fw-semibold">Pengajuan Disetujui</p>
+                        <small class="text-muted d-block">Barang Anda sudah disiapkan untuk diambil</small>
+                    </div>
+                </div>
+                @elseif($isPengaju && $pengajuan->status === 'partial_approved')
+                <div class="card panel-card panel-accent-info">
+                    <div class="panel-head"><h5 class="mb-0">Status Pengajuan</h5></div>
+                    <div class="card-body p-4">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-circle-exclamation status-icon text-info"></i>
+                            <p class="mt-3 mb-0 fw-semibold">Pengajuan Disetujui Sebagian</p>
+                        </div>
+                        <div class="note-box">
+                            <p class="mb-0 note-text">
+                                {{ $pengajuan->rejection_reason ?: 'Beberapa item disetujui, sementara item lainnya tidak tersedia. Lihat detail untuk informasi lengkap.' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @elseif($isPengaju && $pengajuan->status === 'rejected')
+                <div class="card panel-card panel-accent-danger">
+                    <div class="panel-head"><h5 class="mb-0">Status Pengajuan</h5></div>
+                    <div class="card-body p-4">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-times-circle status-icon text-danger"></i>
+                            <p class="mt-3 mb-0 fw-semibold">Pengajuan Ditolak</p>
+                        </div>
+                        @if($pengajuan->rejection_reason)
+                        <div class="alert alert-danger mb-0">
+                            <small><strong>Alasan:</strong> {{ $pengajuan->rejection_reason }}</small>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endif
             </div>
-            @endif
         </div>
     </div>
 </div>
 
+@include('pesan.pesan')
+
 <script>
-function submitApproval(pengajuanId) {
-    const form = document.getElementById('approval-form-' + pengajuanId);
-    const inputs = form.querySelectorAll('input[name^="approved"]');
-    let hasApproved = false;
-    let allRejected = true;
-    
-    inputs.forEach(input => {
-        const value = parseInt(input.value) || 0;
-        if (value > 0) {
-            hasApproved = true;
-            allRejected = false;
-        }
-    });
-    
-    if (!hasApproved) {
-        alert('Minimal ada 1 barang yang harus disetujui atau tolak semua pengajuan.');
-        return;
-    }
-    
-    if (confirm('Yakin ingin memproses approval dengan jumlah yang telah ditentukan?')) {
-        form.submit();
-    }
-}
-
-function askRejectAll(pengajuanId) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '{{ route("pengajuan.reject", ":id") }}'.replace(':id', pengajuanId);
-    form.innerHTML = '{{ csrf_field() }}';
-    document.body.appendChild(form);
-    form.submit();
-}
-
-// Pagination AJAX Functions
 const pengajuanId = {{ $pengajuan->id }};
 const pengajuanStatus = '{{ $pengajuan->status }}';
 
@@ -308,17 +269,15 @@ async function loadPengajuanDetails() {
         }
 
         renderPengajuanDetails(payload.items, payload.pengajuan_status);
-        
-        // Render pagination if has_pages
+
         if (payload.pagination && payload.pagination.has_pages) {
             renderPengajuanPagination(payload.pagination);
             document.getElementById('pengajuan-pagination-wrapper').style.display = 'block';
         } else {
             document.getElementById('pengajuan-pagination-wrapper').style.display = 'none';
         }
-
     } catch (err) {
-        console.error("Gagal memuat detail pengajuan:", err);
+        console.error('Gagal memuat detail pengajuan:', err);
     }
 }
 
@@ -328,31 +287,25 @@ function renderPengajuanDetails(items, status) {
 
     items.forEach((item, index) => {
         const rowClass = item.status === 'rejected' ? 'table-danger' : (item.status === 'approved' ? 'table-success' : '');
-        
+
         let row = `
             <tr class="${rowClass}">
                 <td>${index + 1}</td>
                 <td>${item.nama_barang || '-'}</td>
-                <td class="text-end">
-                    <span class="badge bg-info">${item.jumlah}</span>
-                </td>
+                <td class="text-end"><span class="badge bg-info-subtle text-info-emphasis">${item.jumlah}</span></td>
         `;
-        
+
         if (status === 'approved' || status === 'partial_approved') {
             const badgeClass = item.jumlah_disetujui > 0 ? 'success' : 'danger';
-            const statusBadge = item.status === 'approved' ? '✓ Disetujui' : (item.status === 'rejected' ? '✗ Ditolak' : 'Pending');
+            const statusBadge = item.status === 'approved' ? 'Disetujui' : (item.status === 'rejected' ? 'Ditolak' : 'Pending');
             const statusBadgeClass = item.status === 'approved' ? 'bg-success' : (item.status === 'rejected' ? 'bg-danger' : 'bg-secondary');
-            
+
             row += `
-                <td class="text-end">
-                    <span class="badge bg-${badgeClass}">${item.jumlah_disetujui}</span>
-                </td>
-                <td class="text-center">
-                    <span class="badge ${statusBadgeClass}">${statusBadge}</span>
-                </td>
+                <td class="text-end"><span class="badge bg-${badgeClass}">${item.jumlah_disetujui}</span></td>
+                <td class="text-center"><span class="badge ${statusBadgeClass}">${statusBadge}</span></td>
             `;
         }
-        
+
         row += `</tr>`;
         tbody.innerHTML += row;
     });
@@ -365,7 +318,6 @@ function renderPengajuanPagination(pagination) {
     const currentPage = pagination.current_page || 1;
     const lastPage = pagination.last_page || 1;
 
-    // Previous button
     if (currentPage > 1) {
         const prevLi = document.createElement('li');
         prevLi.className = 'page-item';
@@ -378,7 +330,6 @@ function renderPengajuanPagination(pagination) {
         paginationList.appendChild(prevLi);
     }
 
-    // Page numbers dengan range
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(lastPage, currentPage + 2);
 
@@ -417,7 +368,6 @@ function renderPengajuanPagination(pagination) {
         paginationList.appendChild(lastLi);
     }
 
-    // Next button
     if (currentPage < lastPage) {
         const nextLi = document.createElement('li');
         nextLi.className = 'page-item';
@@ -450,13 +400,11 @@ async function loadPengajuanPage(page) {
             renderPengajuanPagination(pagination);
             document.getElementById('pengajuan-pagination-wrapper').style.display = 'block';
         }
-
     } catch (err) {
-        console.error("Gagal memuat halaman detail pengajuan:", err);
+        console.error('Gagal memuat halaman detail pengajuan:', err);
     }
 }
 
-// Approval Form AJAX Functions
 async function loadApprovalDetails() {
     try {
         const res = await fetch(`/pengajuan/${pengajuanId}/details`);
@@ -473,16 +421,15 @@ async function loadApprovalDetails() {
         }
 
         renderApprovalDetails(payload.items);
-        
+
         if (payload.pagination && payload.pagination.has_pages) {
             renderApprovalPagination(payload.pagination);
             document.getElementById('approval-pagination-wrapper').style.display = 'block';
         } else {
             document.getElementById('approval-pagination-wrapper').style.display = 'none';
         }
-
     } catch (err) {
-        console.error("Gagal memuat detail approval:", err);
+        console.error('Gagal memuat detail approval:', err);
     }
 }
 
@@ -494,11 +441,9 @@ function renderApprovalDetails(items) {
         const row = `
             <tr>
                 <td>${item.nama_barang || '-'}</td>
+                <td class="text-center"><span class="badge bg-info-subtle text-info-emphasis">${item.jumlah}</span></td>
                 <td class="text-center">
-                    <span class="badge bg-info">${item.jumlah}</span>
-                </td>
-                <td class="text-center">
-                    <input type="number" name="approved[${item.id}]" min="0" max="${item.jumlah}" value="${item.jumlah}" class="form-control form-control-sm text-center" style="max-width: 80px; margin: 0 auto;" />
+                    <input type="number" name="approved[${item.id}]" min="0" max="${item.jumlah}" value="${item.jumlah}" class="form-control form-control-sm text-center" style="max-width: 90px; margin: 0 auto;" />
                 </td>
             </tr>
         `;
@@ -513,7 +458,6 @@ function renderApprovalPagination(pagination) {
     const currentPage = pagination.current_page || 1;
     const lastPage = pagination.last_page || 1;
 
-    // Previous button
     if (currentPage > 1) {
         const prevLi = document.createElement('li');
         prevLi.className = 'page-item';
@@ -526,7 +470,6 @@ function renderApprovalPagination(pagination) {
         paginationList.appendChild(prevLi);
     }
 
-    // Page numbers dengan range
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(lastPage, currentPage + 2);
 
@@ -565,7 +508,6 @@ function renderApprovalPagination(pagination) {
         paginationList.appendChild(lastLi);
     }
 
-    // Next button
     if (currentPage < lastPage) {
         const nextLi = document.createElement('li');
         nextLi.className = 'page-item';
@@ -598,32 +540,189 @@ async function loadApprovalPage(page) {
             renderApprovalPagination(pagination);
             document.getElementById('approval-pagination-wrapper').style.display = 'block';
         }
-
     } catch (err) {
-        console.error("Gagal memuat halaman approval:", err);
+        console.error('Gagal memuat halaman approval:', err);
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     loadPengajuanDetails();
-    // Hanya load approval details jika approval form visible
     if (document.getElementById('approval-barang-tbody')) {
         loadApprovalDetails();
     }
 });
-
 </script>
 
 <style>
-    .table-hover tbody tr:hover {
-        background-color: rgba(0, 0, 0, 0.02);
-    }
-    
-    .card {
-        border-radius: 0.5rem;
+    .detail-page {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 1.2rem 0.4rem 1.8rem;
     }
 
-    /* Pagination Styling */
+    .detail-header {
+        border: 1px solid #dbe7ff;
+        border-radius: 18px;
+        background: linear-gradient(110deg, #f0f6ff 0%, #ffffff 70%);
+        padding: 1.2rem 1.35rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .detail-overline {
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .panel-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 16px 30px -28px rgba(15, 23, 42, 0.35);
+        overflow: hidden;
+    }
+
+    .panel-head {
+        padding: 0.95rem 1.2rem;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .panel-accent-warning {
+        border-top: 4px solid #f59e0b;
+    }
+
+    .panel-accent-success {
+        border-top: 4px solid #10b981;
+    }
+
+    .panel-accent-info {
+        border-top: 4px solid #0ea5e9;
+    }
+
+    .panel-accent-danger {
+        border-top: 4px solid #ef4444;
+    }
+
+    .label {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .value {
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .qty-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #1e40af;
+        background: #eaf2ff;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        font-size: 0.74rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-pending {
+        background: #fff7e6;
+        color: #b45309;
+    }
+
+    .status-approved {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .status-partial {
+        background: #f0f9ff;
+        color: #0369a1;
+    }
+
+    .status-rejected {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    .note-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.7rem 0.8rem;
+    }
+
+    .note-text {
+        font-size: 0.88rem;
+        color: #334155;
+        line-height: 1.45;
+    }
+
+    .avatar-circle {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, #2563eb, #60a5fa);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.05rem;
+        box-shadow: 0 8px 20px -10px rgba(37, 99, 235, 0.6);
+    }
+
+    .status-icon {
+        font-size: 2.8rem;
+    }
+
+    .table-professional thead th {
+        background: #f8fafc;
+        color: #334155;
+        font-weight: 700;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.9rem 1rem;
+    }
+
+    .table-professional tbody td {
+        border-color: #f1f5f9;
+        padding: 0.9rem 1rem;
+        color: #334155;
+        vertical-align: middle;
+    }
+
+    .table-professional tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    .pagination-wrap {
+        padding: 1.1rem 1rem;
+        border-top: 1px solid #e2e8f0;
+        background: #fbfdff;
+    }
+
     .pagination {
         gap: 6px;
     }
@@ -636,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
         font-weight: 500;
         font-size: 13px;
         border-radius: 6px;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
         min-width: 38px;
         text-align: center;
     }
@@ -645,8 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
         color: #fff;
         background-color: #0d6efd;
         border-color: #0d6efd;
-        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.25);
-        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.2);
     }
 
     .pagination .page-item.active .page-link {
@@ -654,7 +752,7 @@ document.addEventListener('DOMContentLoaded', function() {
         border-color: #0d6efd;
         color: #fff;
         font-weight: 600;
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
     }
 
     .pagination .page-item.disabled .page-link {
@@ -662,14 +760,6 @@ document.addEventListener('DOMContentLoaded', function() {
         background-color: #f8f9fa;
         border-color: #dee2e6;
         cursor: not-allowed;
-    }
-
-    .pagination .page-item.disabled .page-link:hover {
-        color: #b5bcc7;
-        background-color: #f8f9fa;
-        border-color: #dee2e6;
-        transform: none;
-        box-shadow: none;
     }
 
     .page-link i {
@@ -680,11 +770,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .pagination {
             flex-wrap: wrap;
         }
-        
+
         .pagination .page-link {
             padding: 0.4rem 0.6rem;
             font-size: 12px;
             min-width: 35px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .detail-header {
+            padding: 1rem;
         }
     }
 </style>

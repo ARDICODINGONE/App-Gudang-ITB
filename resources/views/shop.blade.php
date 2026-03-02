@@ -364,7 +364,8 @@
                 body: JSON.stringify({ barang_id: productId, quantity: 1 })
             }).then(res => {
                 if (res.ok) {
-                    // success on server: optionally update badge later
+                    // success on server: remember last selected gudang so cart->pengajuan can reuse it
+                    try { localStorage.setItem('lastGudang', currentGudangCode || ''); } catch(e) {}
                     return;
                 }
                 throw new Error('server');
@@ -395,6 +396,7 @@
                 else cart.push(product);
 
                 localStorage.setItem('electro_cart', JSON.stringify(cart));
+                try { localStorage.setItem('lastGudang', currentGudangCode || ''); } catch(e) {}
 
                 // show an additional short message indicating fallback saved locally
                 showAddFeedback(btn, 'Disimpan lokal (server tidak merespon)');

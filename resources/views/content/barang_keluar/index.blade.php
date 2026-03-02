@@ -109,12 +109,6 @@
           <h5 class="mb-1 text-white">Daftar Barang Keluar</h5>
           <p class="bk-subtitle">Kontrol arus keluar barang agar stok gudang tetap akurat.</p>
         </div>
-
-        <div>
-          <button type="button" class="btn btn-sm btn-light text-danger fw-semibold" data-bs-toggle="modal" data-bs-target="#modalTambahBarangKeluar">
-            <i class="ri ri-add-line me-1"></i>Tambah
-          </button>
-        </div>
       </div>
 
       <div class="card-body p-3 p-md-4">
@@ -134,7 +128,6 @@
                 <th>Gudang</th>
                 <th>Jumlah</th>
                 <th>Tanggal</th>
-                <th class="text-center">Aksi</th>
               </tr>
             </thead>
             <tbody class="table-border-bottom-0">
@@ -143,22 +136,15 @@
                   <td>
                     <span class="bk-no">{{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}</span>
                   </td>
-                  <td class="fw-semibold">{{ optional($item->barang)->nama_barang ?? '-' }}</td>
-                  <td>{{ optional($item->gudang)->kode_gudang ?? '-' }}</td>
+                  <td>
+                    <div class="fw-semibold">{{ optional($item->barang)->nama_barang ?? '-' }}</div>
+                    <small class="text-muted">
+                      {{ optional($item->barang)->deskripsi ? \Illuminate\Support\Str::limit(optional($item->barang)->deskripsi, 80) : '-' }}
+                    </small>
+                  </td>
+                  <td>{{ optional($item->gudang)->nama_gudang ?? '-' }}</td>
                   <td class="bk-jumlah">{{ $item->jumlah }}</td>
                   <td class="bk-tanggal">{{ $item->tanggal }}</td>
-                  <td>
-                    <div class="bk-aksi">
-                      <a class="btn btn-sm btn-outline-primary" href="javascript:void(0);"
-                        onclick='editBarangKeluar({!! json_encode(route("barang-keluar.update", $item->id)) !!}, {!! json_encode($item->id) !!}, {!! json_encode($item->id_barang) !!}, {!! json_encode($item->kode_gudang) !!}, {!! json_encode($item->jumlah) !!}, {!! json_encode($item->tanggal) !!})'>
-                        <i class="ri-pencil-line me-1"></i>Edit
-                      </a>
-                      <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
-                        onclick='konfirmasiHapus({!! json_encode(route("barang-keluar.destroy", $item->id)) !!})'>
-                        <i class="ri-delete-bin-6-line me-1"></i>Hapus
-                      </a>
-                    </div>
-                  </td>
                 </tr>
               @empty
                 <tr>
@@ -181,10 +167,6 @@
       </div>
     </div>
   </div>
-
-  @include('content.barang_keluar.create')
-  @include('content.barang_keluar.delete')
-  @include('content.barang_keluar.update')
 
   <script>
     function konfirmasiHapus(actionUrl) {
