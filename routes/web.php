@@ -101,7 +101,7 @@ Route::delete('/barang-keluar/{barang_keluar}', [BarangKeluarController::class, 
 
 // Reports (Laporan) - accessible by authenticated users
 Route::middleware('auth')->group(function () {
-    Route::get('/laporan', [ReportController::class, 'index'])->name('laporan.index');
+    Route::get('/laporan', [ReportController::class, 'index'])->middleware('petugas')->name('laporan.index');
     Route::get('/laporan/stok-gudang', [ReportController::class, 'stokGudang'])->name('laporan.stok-gudang');
     Route::get('/laporan/barang-masuk', [ReportController::class, 'barangMasuk'])->name('laporan.barang-masuk');
     Route::get('/laporan/barang-masuk/export-excel', [ReportController::class, 'exportBarangMasukExcel'])->name('laporan.barang-masuk.export-excel');

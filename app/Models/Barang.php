@@ -32,4 +32,9 @@ class Barang extends Model
     {
         return $this->hasMany(Stok::class, 'id_barang');
     }
+
+    public function barangMasuk(): HasMany
+    {
+        return $this->hasMany(BarangMasuk::class, 'id_barang');
+    }
 }

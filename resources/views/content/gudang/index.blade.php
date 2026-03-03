@@ -134,7 +134,6 @@
             <div>{{ session('success') }}</div>
           </div>
         @endif
-
         <div class="row g-4">
           @forelse ($gudangs as $gudang)
             <div class="col-md-6 col-lg-4">
@@ -150,10 +149,6 @@
                 <div class="mb-2">
                   <h5 class="mb-1">{{ $gudang->nama_gudang }}</h5>
                   <div class="lokasi-text">{{ $gudang->lokasi ?: '-' }}</div>
-                </div>
-
-                <div class="mb-3">
-                  <span class="kode-pill">Kode: {{ $gudang->kode_gudang }}</span>
                 </div>
 
                 <div class="mt-auto">
@@ -200,12 +195,17 @@
   @include('content.gudang.create')
   @include('content.gudang.delete')
   @include('content.gudang.update')
+  @include('pesan.pesan-gudang')
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       @if ($errors->any())
         var myModal = new bootstrap.Modal(document.getElementById('modalTambahGudang'));
         myModal.show();
+      @endif
+      @if (session('error'))
+        var errorModal = new bootstrap.Modal(document.getElementById('modalPesanGudang'));
+        errorModal.show();
       @endif
     });
 

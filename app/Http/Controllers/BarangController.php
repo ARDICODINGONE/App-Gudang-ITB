@@ -24,11 +24,11 @@ class BarangController extends Controller
         if ($gudangKode) {
             $barangs = Barang::with(['kategori', 'stok' => function ($q) use ($gudangKode) {
                 $q->where('kode_gudang', $gudangKode);
-            }])->whereHas('stok', function ($q) use ($gudangKode) {
+            }])->withCount('barangMasuk')->whereHas('stok', function ($q) use ($gudangKode) {
                 $q->where('kode_gudang', $gudangKode);
             })->paginate(15);
         } else {
-            $barangs = Barang::with('kategori')->paginate(15);
+            $barangs = Barang::with('kategori')->withCount('barangMasuk')->paginate(15);
         }
 
         $kategoris = Kategori::all();
@@ -154,6 +154,14 @@ class BarangController extends Controller
     public function destroy($kode_barang)
     {
         $barang = barang::where('kode_barang', $kode_barang)->firstOrFail();
+
+        $sudahDipakaiDiBarangMasuk = BarangMasuk::where('id_barang', $barang->id)->exists();
+        if ($sudahDipakaiDiBarangMasuk) {
+            return redirect()
+                ->route('barang-index')
+                ->with('error', 'Barang tidak bisa dihapus karena sudah ada di data Barang Masuk.');
+        }
+
         if ($barang->image) {
             Storage::disk('public')->delete($barang->image);
         }

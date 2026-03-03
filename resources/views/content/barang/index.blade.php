@@ -222,7 +222,7 @@
                       </a>
 
                       <a class="btn btn-sm btn-outline-danger" href="javascript:void(0);"
-                        onclick="konfirmasiHapus('{{ route('barang.destroy', $item->kode_barang) }}')">
+                        onclick="konfirmasiHapus('{{ route('barang.destroy', $item->kode_barang) }}', {{ ($item->barang_masuk_count ?? 0) > 0 ? 'true' : 'false' }})">
                         <i class="ri-delete-bin-6-line me-1"></i>Hapus
                       </a>
                     </div>
@@ -254,6 +254,7 @@
   @include('content.barang.create')
   @include('content.barang.import')
   @include('content.barang.update')
+  @include('pesan.pesan-barang')
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -265,11 +266,25 @@
         var importModal = new bootstrap.Modal(document.getElementById('importBarangModal'));
         importModal.show();
       @endif
+      @if (session('error'))
+        var errorModal = new bootstrap.Modal(document.getElementById('modalPesanBarang'));
+        errorModal.show();
+      @endif
     });
   </script>
 
   <script>
-    function konfirmasiHapus(actionUrl) {
+    function konfirmasiHapus(actionUrl, sudahDipakaiDiBarangMasuk = false) {
+      if (sudahDipakaiDiBarangMasuk) {
+        var pesanEl = document.getElementById('pesanBarangText');
+        if (pesanEl) {
+          pesanEl.textContent = 'Barang tidak bisa dihapus karena sudah ada di data Barang Masuk.';
+        }
+        var errorModal = new bootstrap.Modal(document.getElementById('modalPesanBarang'));
+        errorModal.show();
+        return;
+      }
+
       var form = document.getElementById('formHapusBarang');
       form.action = actionUrl;
       var myModal = new bootstrap.Modal(document.getElementById('modalHapusBarang'));

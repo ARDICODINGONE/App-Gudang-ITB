@@ -116,14 +116,20 @@ class GudangController extends Controller
 
     public function destroy($kode_gudang)
     {
-        // Cari data berdasarkan kode_gudang
-        // Kita gunakan firstOrFail agar muncul 404 jika data tidak ada
         $gudang = Gudang::where('kode_gudang', $kode_gudang)->firstOrFail();
 
-        // Hapus data
+        $hasBarang = Stok::where('kode_gudang', $kode_gudang)
+            ->where('stok', '>', 0)
+            ->exists();
+
+        if ($hasBarang) {
+            return redirect()
+                ->route('gudang-index')
+                ->with('error', 'Gudang tidak bisa dihapus karena masih memiliki barang.');
+        }
+
         $gudang->delete();
 
-        // Redirect kembali
         return redirect()->route('gudang-index')->with('success', 'Data gudang berhasil dihapus!');
     }
 

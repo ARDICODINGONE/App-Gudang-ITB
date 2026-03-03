@@ -473,9 +473,8 @@ class ReportController extends Controller
         $user = auth()->user();
         $query = Pengajuan::with(['user', 'details.barang', 'gudang']);
         
-        // Kontrol akses berdasarkan role
-        if ($user && $user->role !== 'admin' && $user->role !== 'petugas') {
-            // User biasa hanya bisa melihat pengajuan mereka sendiri
+        // Semua role hanya bisa melihat pengajuan miliknya sendiri
+        if ($user) {
             $query->where('user_id', $user->id);
         }
         
@@ -493,21 +492,13 @@ class ReportController extends Controller
             $query->where('status', $request->query('status'));
         }
 
-        // Filter by user (hanya untuk admin/petugas)
-        if ($request->query('user') && ($user->role === 'admin' || $user->role === 'petugas')) {
-            $query->where('user_id', $request->query('user'));
-        }
-        
         $pengajuans = $query->orderBy('tanggal', 'desc')->paginate(15);
         
         $totalPengajuan = $query->count();
         $statusOptions = ['pending', 'approved', 'rejected', 'completed'];
         
-        // Get users untuk dropdown (hanya untuk admin)
+        // Tidak dipakai lagi karena akses selalu per user login
         $users = [];
-        if ($user && ($user->role === 'admin' || $user->role === 'petugas')) {
-            $users = \App\Models\User::orderBy('nama')->get();
-        }
         
         return view('content.laporan.riwayat-pengajuan', compact('pengajuans', 'totalPengajuan', 'statusOptions', 'users', 'user'));
     }
@@ -518,8 +509,8 @@ class ReportController extends Controller
         $user = auth()->user();
         $query = Pengajuan::with(['user', 'details.barang', 'gudang']);
         
-        // Kontrol akses
-        if ($user && $user->role !== 'admin' && $user->role !== 'petugas') {
+        // Semua role hanya bisa export pengajuan miliknya sendiri
+        if ($user) {
             $query->where('user_id', $user->id);
         }
         
@@ -532,10 +523,6 @@ class ReportController extends Controller
         if ($request->query('status')) {
             $query->where('status', $request->query('status'));
         }
-        if ($request->query('user') && ($user->role === 'admin' || $user->role === 'petugas')) {
-            $query->where('user_id', $request->query('user'));
-        }
-
         $pengajuans = $query->orderBy('tanggal', 'desc')->get();
 
         $spreadsheet = new Spreadsheet();
@@ -616,8 +603,8 @@ class ReportController extends Controller
         $user = auth()->user();
         $query = Pengajuan::with(['user', 'details.barang', 'gudang']);
         
-        // Kontrol akses
-        if ($user && $user->role !== 'admin' && $user->role !== 'petugas') {
+        // Semua role hanya bisa export pengajuan miliknya sendiri
+        if ($user) {
             $query->where('user_id', $user->id);
         }
         
@@ -630,10 +617,6 @@ class ReportController extends Controller
         if ($request->query('status')) {
             $query->where('status', $request->query('status'));
         }
-        if ($request->query('user') && ($user->role === 'admin' || $user->role === 'petugas')) {
-            $query->where('user_id', $request->query('user'));
-        }
-
         $pengajuans = $query->orderBy('tanggal', 'desc')->get();
         $totalPengajuan = $pengajuans->count();
 

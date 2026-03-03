@@ -3,6 +3,9 @@
 @section('title', 'Laporan Riwayat Pengajuan')
 
 @section('content')
+  @php
+    $canViewAllRiwayat = false;
+  @endphp
   <style>
     .report-page { max-width: 1320px; margin: 1.5rem auto; padding: 1rem; border-radius: 20px; background: linear-gradient(180deg, #f7fbff 0%, #ffffff 100%); box-shadow: 0 20px 44px -34px rgba(24, 72, 128, 0.38);} 
     .report-hero { border: 1px solid #d8e8fb; border-radius: 16px; padding: 1rem 1.25rem; background: linear-gradient(100deg, #0ea5c6 0%, #23b7d8 72%, #53c8e3 100%); color:#fff; }
@@ -25,11 +28,7 @@
       <div>
         <h1><i class="bi bi-clock-history me-2"></i>Riwayat Pengajuan</h1>
         <p>
-          @if($user && ($user->role === 'admin' || $user->role === 'petugas'))
-            Lihat riwayat pengajuan dari semua user
-          @else
-            Lihat riwayat pengajuan Anda
-          @endif
+          Lihat riwayat pengajuan Anda
         </p>
       </div>
       <div class="d-flex flex-wrap gap-2">
@@ -41,7 +40,7 @@
 
     <div class="report-panel p-3 p-md-4 mt-3">
       <form method="GET" action="{{ route('laporan.riwayat-pengajuan') }}" class="row g-3">
-        @if($user && ($user->role === 'admin' || $user->role === 'petugas'))
+        @if($canViewAllRiwayat)
           <div class="col-md-3">
             <label class="form-label" for="user">User</label>
             <select class="form-select" id="user" name="user">
@@ -87,7 +86,7 @@
               <th class="text-center" style="width: 60px;">No</th>
               <th>Tanggal</th>
               <th>Kode Pengajuan</th>
-              @if($user && ($user->role === 'admin' || $user->role === 'petugas'))
+              @if($canViewAllRiwayat)
                 <th>User</th>
               @endif
               <th>Gudang</th>
@@ -103,7 +102,7 @@
                 <td class="text-center">{{ ($pengajuans->currentPage() - 1) * $pengajuans->perPage() + $index + 1 }}</td>
                 <td><span class="fw-semibold">{{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}</span></td>
                 <td><span class="badge bg-secondary">{{ $p->kode_pengajuan }}</span></td>
-                @if($user && ($user->role === 'admin' || $user->role === 'petugas'))
+                @if($canViewAllRiwayat)
                   <td>
                     @if($p->user)
                       <small class="fw-semibold">{{ $p->user->nama ?? '-' }}</small><br>
@@ -137,7 +136,7 @@
               </tr>
             @empty
               <tr>
-                <td colspan="{{ ($user && ($user->role === 'admin' || $user->role === 'petugas')) ? 9 : 8 }}">
+                <td colspan="{{ $canViewAllRiwayat ? 9 : 8 }}">
                   <div class="empty-state"><i class="bi bi-inbox fs-2 d-block mb-2"></i>Tidak ada riwayat pengajuan untuk periode ini</div>
                 </td>
               </tr>
@@ -155,13 +154,8 @@
         <div class="col-md-6">
           <h6 class="fw-bold mb-2"><i class="bi bi-shield-check text-success me-2"></i>Kontrol Akses</h6>
           <ul class="small list-unstyled mb-0">
-            @if($user && ($user->role === 'admin' || $user->role === 'petugas'))
-              <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Anda dapat melihat semua pengajuan dari semua user</li>
-              <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Anda dapat memfilter berdasarkan user tertentu</li>
-            @else
-              <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Anda hanya dapat melihat pengajuan Anda sendiri</li>
-              <li class="mb-2"><i class="bi bi-lock text-warning me-2"></i>Pengajuan pengguna lain tidak dapat diakses</li>
-            @endif
+            <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Anda hanya dapat melihat pengajuan Anda sendiri</li>
+            <li class="mb-2"><i class="bi bi-lock text-warning me-2"></i>Pengajuan pengguna lain tidak dapat diakses</li>
           </ul>
         </div>
         <div class="col-md-6">
