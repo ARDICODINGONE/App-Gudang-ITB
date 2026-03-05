@@ -185,6 +185,7 @@ php artisan test:notifications all
     │ - atasan                             │
     │ - admin                              │
     │                                      │
+    │ Detail: "Barang: Nama1 (qty), …"        │
     │ Type: 'info' (Blue) 🔵              │
     └──────────────────────────────────────┘
 
@@ -209,6 +210,7 @@ php artisan test:notifications all
     │ Type: 'success' (Green) 🟢           │
     │ Title: "Pengajuan Disetujui"         │
     │ Message: "Pengajuan Anda disetujui"  │
+    │ Detail: "Barang: Nama1 (qty), …" │
     │                                      │
     │ Atau REJECTED (false):               │
     │ Type: 'danger' (Red) 🔴              │

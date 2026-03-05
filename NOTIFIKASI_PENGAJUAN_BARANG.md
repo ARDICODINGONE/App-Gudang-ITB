@@ -13,7 +13,7 @@ Sistem notifikasi otomatis untuk pengajuan barang yang mengirimkan notifikasi ke
 - **Content**:
   - Title: "Pengajuan Barang Baru"
   - Message: "Ada pengajuan barang baru dari [Nama User]"
-  - Detail: "Kode Pengajuan: [KODE] | Jumlah Item: [QTY]"
+  - Detail: "Barang: [NAMA1] (qty), ..."
   - Type: `info`
   - Link: Mengarah ke halaman detail pengajuan
 
@@ -23,7 +23,7 @@ Sistem notifikasi otomatis untuk pengajuan barang yang mengirimkan notifikasi ke
 - **Content**:
   - Title: "Pengajuan Disetujui"
   - Message: "Pengajuan barang Anda telah disetujui"
-  - Detail: "Kode Pengajuan: [KODE]"
+  - Detail: "Barang: [NAMA1] (qty), ..."
   - Type: `success`
   - Link: Mengarah ke halaman detail pengajuan
 
@@ -33,7 +33,7 @@ Sistem notifikasi otomatis untuk pengajuan barang yang mengirimkan notifikasi ke
 - **Content**:
   - Title: "Pengajuan Ditolak"
   - Message: "Pengajuan barang Anda telah ditolak"
-  - Detail: "Kode Pengajuan: [KODE]"
+  - Detail: "Barang: [NAMA1] (qty), ..."
   - Type: `danger`
   - Link: Mengarah ke halaman detail pengajuan
 
@@ -64,6 +64,7 @@ Sistem notifikasi otomatis untuk pengajuan barang yang mengirimkan notifikasi ke
 - **[NotificationHelper.php](../app/Helpers/NotificationHelper.php)**:
   - `notifyApproversOnPengajuanSubmitted()`: Mengirim notifikasi ke semua approvers
   - `notifyApprovalDecision()`: Mengirim notifikasi approval/rejection ke pengaju
+    (helper sekarang akan otomatis memuat model jika diberikan stdClass)
 
 ### Views
 - **[notifications/index.blade.php](../resources/views/notifications/index.blade.php)**: 

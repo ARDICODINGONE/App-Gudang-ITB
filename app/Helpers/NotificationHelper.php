@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\Notification;
+use App\Models\Pengajuan;
 use App\Models\User;
 
 class NotificationHelper
@@ -46,7 +47,16 @@ class NotificationHelper
      */
     public static function notifyApprovalDecision($pengajuan, $approved = true, $totalApproved = 0, $totalRejected = 0, $customMessage = null)
     {
-        if (!$pengajuan->user_id) {
+        // ensure we have an Eloquent model so relations can be called
+        if (!is_object($pengajuan) || !method_exists($pengajuan, 'details')) {
+            if (is_object($pengajuan) && isset($pengajuan->id)) {
+                $pengajuan = Pengajuan::find($pengajuan->id);
+            } else {
+                $pengajuan = null;
+            }
+        }
+
+        if (!$pengajuan || !$pengajuan->user_id) {
             return;
         }
 
@@ -71,7 +81,17 @@ class NotificationHelper
             $message = $customMessage;
         }
         
-        $detail = 'Kode Pengajuan: ' . $pengajuan->kode_pengajuan;
+        // build list of barang involved in the pengajuan so user can see what was requested
+        $details = $pengajuan->details()->with('barang')->get();
+        $barangList = $details->map(function($d) {
+            return $d->barang->nama_barang . ' (' . $d->jumlah . ' pcs)';
+        })->implode(', ');
+
+        // build detail field without kode pengajuan: only barang list
+        $detail = '';
+        if ($barangList !== '') {
+            $detail .= 'Barang: ' . $barangList;
+        }
         $link = route('pengajuan.show', $pengajuan->id);
 
         Notification::create([

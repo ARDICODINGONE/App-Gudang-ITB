@@ -71,7 +71,7 @@
     }
 </style>
 
-<footer class="gd-footer">
+<footer class="gd-footer mt-auto">
     <div class="gd-footer-main">
         <div>
             <p class="gd-brand">GUDIT</p>

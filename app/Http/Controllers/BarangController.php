@@ -524,9 +524,6 @@ class BarangController extends Controller
                                     $filename = 'images/barang/' . time() . '_' . Str::random(8) . '.' . $ext;
                                     Storage::disk('public')->put($filename, $contents);
                                     $storedPath = $filename;
-                                } else {
-                                    // If download fails, skip image
-                                    $errors[] = "Baris {$rowNumber}: gagal mengunduh image dari URL: {$imageVal}";
                                 }
                             } else {
                                 // Local file path or filename - save as is (user must ensure file exists in storage)
@@ -709,9 +706,6 @@ class BarangController extends Controller
                                 $filename = 'images/barang/' . time() . '_' . Str::random(8) . '.' . $ext;
                                 Storage::disk('public')->put($filename, $contents);
                                 $storedPath = $filename;
-                            } else {
-                                // If download fails, skip image
-                                $errors[] = "Baris {$rowNumber}: gagal mengunduh image dari URL: {$imageVal}";
                             }
                         } else {
                             // Local file path or filename - save as is (user must ensure file exists in storage)

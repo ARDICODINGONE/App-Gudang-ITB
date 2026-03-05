@@ -558,6 +558,9 @@ class PengajuanController extends Controller
             'rejection_reason' => $request->input('note') ?? null,
         ]);
 
+        // re‑load the Eloquent model (previous $pengajuan was a stdClass from query builder)
+        $pengajuan = Pengajuan::find($id);
+
         // Send notification to pengaju
         NotificationHelper::notifyApprovalDecision($pengajuan, false);
 
