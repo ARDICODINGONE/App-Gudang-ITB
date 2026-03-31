@@ -26,6 +26,7 @@
 
     <link href="{{ asset('css/dash.css') }}" rel="stylesheet">
     <link href="{{ asset('css/shop.css') }}" rel="stylesheet">
+    @stack('styles')
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -47,6 +48,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 
     <script src="{{ asset('js/main.js') }}"></script>
+    @stack('scripts')
 
     <script>
         // Save current page URL to localStorage when not on cart page

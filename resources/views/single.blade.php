@@ -58,7 +58,7 @@
                                     <p class="mb-3 text-muted">
                                         Category:
                                         @if (isset($product->category))
-                                            <a href="{{ route('category.show', $product->category->slug) }}"
+                                            <a href="{{ url('/shop') }}"
                                                 class="text-decoration-none">
                                                 {{ $product->category->name }}
                                             </a>
@@ -219,8 +219,8 @@
                                         <!-- Description Tab -->
                                         <div class="tab-pane fade show active" id="nav-description" role="tabpanel"
                                             aria-labelledby="nav-description-tab">
-                                            {!! $product->description ??
-                                                '<p>Our new <b class="fw-bold">HPB12 / A12 battery</b> is rated at 2000mAh and designed to power up Black and Decker / FireStorm line of 12V tools allowing users to run multiple devices off the same battery pack.</p>' !!}
+                                            {{ $product->description ??
+                                                'Our new HPB12 / A12 battery is rated at 2000mAh and designed to power up Black and Decker / FireStorm line of 12V tools allowing users to run multiple devices off the same battery pack.' }}
                                         </div>
 
                                         <!-- Specifications Tab -->
@@ -283,13 +283,13 @@
                             @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
                                 @foreach ($recommendedProducts as $recommended)
                                     <div class="d-flex mb-3 pb-3 border-bottom">
-                                        <a href="{{ route('products.show', $recommended->slug) }}" class="flex-shrink-0">
+                                        <a href="{{ url('/single') }}" class="flex-shrink-0">
                                             <img src="{{ $recommended->image ? asset('storage/' . $recommended->image) : asset('img/product-1.png') }}"
                                                 alt="{{ $recommended->name }}" class="rounded"
                                                 style="width: 80px; height: 80px; object-fit: cover;">
                                         </a>
                                         <div class="flex-grow-1 ms-3">
-                                            <a href="{{ route('products.show', $recommended->slug) }}"
+                                            <a href="{{ url('/single') }}"
                                                 class="text-decoration-none">
                                                 <h6 class="fw-bold mb-1 text-dark">
                                                     {{ Str::limit($recommended->name, 40) }}</h6>

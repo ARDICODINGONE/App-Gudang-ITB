@@ -15,6 +15,11 @@ use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\ReportController;
 
 use App\Models\Kategori;
+use App\Models\Gudang;
+use App\Models\Barang;
+use App\Models\BarangMasuk;
+use App\Models\BarangKeluar;
+use App\Models\Pengajuan;
 use App\Http\Controllers\CartController;
 
 Route::get('/shop', function () {
@@ -42,8 +47,133 @@ Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
 Route::delete('/cart/clear', [CartController::class, 'clear']);
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('home');
+    }
+
     return view('welcome');
 });
+
+Route::get('/home', function () {
+    $user = Auth::user();
+    $role = $user->role;
+    $dashboardTitle = 'Ringkasan Dashboard';
+
+    if (in_array($role, ['admin', 'petugas'], true)) {
+        $dashboardTitle = 'Ringkasan Admin';
+        $dashboardStats = [
+            ['label' => 'Total Gudang', 'value' => Gudang::count(), 'icon' => 'fa-warehouse'],
+            ['label' => 'Total Barang', 'value' => Barang::count(), 'icon' => 'fa-boxes'],
+            ['label' => 'Barang Masuk', 'value' => BarangMasuk::count(), 'icon' => 'fa-download'],
+            ['label' => 'Pengajuan Pending', 'value' => Pengajuan::where('status', 'pending')->count(), 'icon' => 'fa-paper-plane'],
+        ];
+
+        $recentBarangMasuk = BarangMasuk::with(['barang', 'gudang'])
+            ->latest('tanggal')
+            ->take(4)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'icon' => 'fa-download',
+                    'color' => 'success',
+                    'title' => optional($item->barang)->nama_barang ?? 'Barang',
+                    'subtitle' => 'Masuk ke ' . (optional($item->gudang)->nama_gudang ?? $item->kode_gudang),
+                    'meta' => (int) $item->jumlah . ' item',
+                    'date' => $item->tanggal ?? $item->created_at,
+                ];
+            });
+
+        $recentBarangKeluar = BarangKeluar::with(['barang', 'gudang'])
+            ->latest('tanggal')
+            ->take(4)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'icon' => 'fa-upload',
+                    'color' => 'danger',
+                    'title' => optional($item->barang)->nama_barang ?? 'Barang',
+                    'subtitle' => 'Keluar dari ' . (optional($item->gudang)->nama_gudang ?? $item->kode_gudang),
+                    'meta' => (int) $item->jumlah . ' item',
+                    'date' => $item->tanggal ?? $item->created_at,
+                ];
+            });
+
+        $recentPengajuan = Pengajuan::with('gudang')
+            ->latest('tanggal')
+            ->take(4)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'icon' => 'fa-paper-plane',
+                    'color' => 'warning',
+                    'title' => $item->kode_pengajuan ?? 'Pengajuan',
+                    'subtitle' => 'Status: ' . ucfirst($item->status ?? 'diproses'),
+                    'meta' => optional($item->gudang)->nama_gudang ?? $item->kode_gudang,
+                    'date' => $item->tanggal ?? $item->created_at,
+                ];
+            });
+
+        $recentActivities = $recentBarangMasuk
+            ->concat($recentBarangKeluar)
+            ->concat($recentPengajuan)
+            ->sortByDesc(function ($item) {
+                return optional($item['date'])->timestamp ?? strtotime((string) $item['date']);
+            })
+            ->take(6)
+            ->values();
+    } elseif ($role === 'approval') {
+        $dashboardTitle = 'Ringkasan Approval';
+        $dashboardStats = [
+            ['label' => 'Pengajuan Pending', 'value' => Pengajuan::where('status', 'pending')->count(), 'icon' => 'fa-clock'],
+            ['label' => 'Disetujui', 'value' => Pengajuan::where('status', 'approved')->count(), 'icon' => 'fa-circle-check'],
+            ['label' => 'Ditolak', 'value' => Pengajuan::where('status', 'rejected')->count(), 'icon' => 'fa-circle-xmark'],
+            ['label' => 'Total Pengajuan', 'value' => Pengajuan::count(), 'icon' => 'fa-paper-plane'],
+        ];
+
+        $recentActivities = Pengajuan::with('gudang')
+            ->latest('tanggal')
+            ->take(6)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'icon' => 'fa-paper-plane',
+                    'color' => $item->status === 'approved' ? 'success' : ($item->status === 'rejected' ? 'danger' : 'warning'),
+                    'title' => $item->kode_pengajuan ?? 'Pengajuan',
+                    'subtitle' => 'Status: ' . ucfirst($item->status ?? 'diproses'),
+                    'meta' => optional($item->gudang)->nama_gudang ?? $item->kode_gudang,
+                    'date' => $item->tanggal ?? $item->created_at,
+                ];
+            });
+    } else {
+        $dashboardTitle = 'Ringkasan User';
+        $myPengajuan = Pengajuan::where('user_id', $user->id);
+
+        $dashboardStats = [
+            ['label' => 'Pengajuan Saya', 'value' => (clone $myPengajuan)->count(), 'icon' => 'fa-paper-plane'],
+            ['label' => 'Pending', 'value' => (clone $myPengajuan)->where('status', 'pending')->count(), 'icon' => 'fa-clock'],
+            ['label' => 'Disetujui', 'value' => (clone $myPengajuan)->where('status', 'approved')->count(), 'icon' => 'fa-circle-check'],
+            ['label' => 'Ditolak', 'value' => (clone $myPengajuan)->where('status', 'rejected')->count(), 'icon' => 'fa-circle-xmark'],
+        ];
+
+        $recentActivities = $myPengajuan
+            ->with('gudang')
+            ->latest('tanggal')
+            ->take(6)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'icon' => 'fa-paper-plane',
+                    'color' => $item->status === 'approved' ? 'success' : ($item->status === 'rejected' ? 'danger' : 'warning'),
+                    'title' => $item->kode_pengajuan ?? 'Pengajuan',
+                    'subtitle' => 'Status: ' . ucfirst($item->status ?? 'diproses'),
+                    'meta' => optional($item->gudang)->nama_gudang ?? $item->kode_gudang,
+                    'date' => $item->tanggal ?? $item->created_at,
+                ];
+            });
+    }
+
+    return view('home', compact('dashboardStats', 'recentActivities', 'dashboardTitle'));
+})->middleware('auth')->name('home');
 
 Route::get('/single', function () {
     return view('single');
@@ -162,7 +292,7 @@ Route::middleware('auth')->group(function () {
 // Authentication routes
 Route::get('/login', function () {
     if (Auth::check()) {
-        return redirect('/');
+        return redirect()->route('home');
     }
     return view('auth.Login');
 })->name('login.show');

@@ -1,14 +1,5 @@
-﻿<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
-    <title>Gudit - Gudang Digital</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
         :root{--primary:#2563eb;--primary-light:#eff6ff;--text-dark:#0f172a;--text-muted:#64748b;--danger:#ef4444;--success:#10b981;--warning:#f59e0b}
         body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8fafc;padding-top:76px}
         .navbar-gudit{background:rgba(255,255,255,.98);backdrop-filter:blur(10px);border-bottom:1px solid #e2e8f0;height:76px;box-shadow:0 4px 20px rgba(0,0,0,.05);padding:0!important}
@@ -97,12 +88,10 @@
             .btn-login{width:100%;justify-content:center}
         }
     </style>
-</head>
-<body>
 
 <nav class="navbar navbar-expand-lg navbar-gudit fixed-top">
     <div class="container-xl">
-        <a href="{{ url('/fojdsf') }}" class="navbar-brand">
+        <a href="{{ url('/') }}" class="navbar-brand">
             <span>GUDIT</span>
             <span class="brand-subtitle">Gudang Digital</span>
         </a>
@@ -226,7 +215,6 @@
 </div>
 @endauth
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // UTILITIES
 function esc(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
@@ -450,5 +438,3 @@ updateBadge();
 setInterval(updateBadge, 60000);
 @endauth
 </script>
-</body>
-</html>

@@ -17,6 +17,24 @@ use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
 
 class BarangController extends Controller
 {
+    private function getLastBarangCodeNumber(): int
+    {
+        $last = Barang::where('kode_barang', 'like', 'BR%')
+            ->orderByRaw('LENGTH(kode_barang) desc, kode_barang desc')
+            ->first();
+
+        if ($last && preg_match('/BR0*([0-9]+)$/', $last->kode_barang, $m)) {
+            return (int) $m[1];
+        }
+
+        return 0;
+    }
+
+    private function formatBarangCode(int $number): string
+    {
+        return 'BR' . str_pad($number, 3, '0', STR_PAD_LEFT);
+    }
+
     public function index(Request $request)
     {
         $gudangKode = $request->query('gudang');
@@ -34,15 +52,7 @@ class BarangController extends Controller
         $kategoris = Kategori::all();
 
         // compute next kode_barang so modal can render it server-side (no client delay)
-        $last = Barang::where('kode_barang', 'like', 'BR%')
-            ->orderByRaw('LENGTH(kode_barang) desc, kode_barang desc')
-            ->first();
-
-        $num = 0;
-        if ($last && preg_match('/BR0*([0-9]+)$/', $last->kode_barang, $m)) {
-            $num = (int) $m[1];
-        }
-        $nextKode = 'BR' . str_pad($num + 1, 3, '0', STR_PAD_LEFT);
+        $nextKode = $this->formatBarangCode($this->getLastBarangCodeNumber() + 1);
 
         return view('content.barang.index', compact('barangs', 'kategoris', 'gudangKode', 'nextKode'));
     }
@@ -52,15 +62,7 @@ class BarangController extends Controller
         $kategoris = Kategori::all();
         $gudangs = Gudang::all();
         // compute next kode_barang for direct create page as well
-        $last = Barang::where('kode_barang', 'like', 'BR%')
-            ->orderByRaw('LENGTH(kode_barang) desc, kode_barang desc')
-            ->first();
-
-        $num = 0;
-        if ($last && preg_match('/BR0*([0-9]+)$/', $last->kode_barang, $m)) {
-            $num = (int) $m[1];
-        }
-        $nextKode = 'BR' . str_pad($num + 1, 3, '0', STR_PAD_LEFT);
+        $nextKode = $this->formatBarangCode($this->getLastBarangCodeNumber() + 1);
 
         return view('content.barang.create', compact('kategoris', 'gudangs', 'nextKode'));
     }
@@ -68,41 +70,72 @@ class BarangController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode_barang' => 'required|unique:barang,kode_barang|max:10',
-            'nama_barang' => 'required|string|max:255',
-            'kategori_id' => 'required|exists:kategori,id',
+            'items' => 'required|array|min:1',
+            'items.*.kode_barang' => 'nullable|string|max:10|unique:barang,kode_barang',
+            'items.*.nama_barang' => 'required|string|max:255',
+            'items.*.kategori_id' => 'required|exists:kategori,id',
             'gudang' => 'nullable|exists:gudang,kode_gudang',
-            'satuan' => 'required|string|max:50',
-            'deskripsi' => 'nullable|string',
-            'harga' => 'required|numeric',
-            'image' => 'nullable|image|max:2048',
+            'items.*.satuan' => 'required|string|max:50',
+            'items.*.deskripsi' => 'nullable|string',
+            'items.*.harga' => 'required|numeric',
+            'items.*.image' => 'nullable|image|max:2048',
         ], [
-            'kode_barang.unique' => 'Kode Barang sudah ada, gunakan kode lain.',
-            'kode_barang.required' => 'Kode Barang wajib diisi.',
+            'items.required' => 'Minimal satu barang harus diisi.',
+            'items.*.kode_barang.unique' => 'Kode Barang sudah ada, gunakan kode lain.',
+            'items.*.nama_barang.required' => 'Nama Barang wajib diisi.',
         ]);
 
-        $data = $request->only(['kode_barang', 'nama_barang', 'kategori_id', 'satuan', 'deskripsi', 'harga']);
+        $items = array_values($request->input('items', []));
+        $postedCodes = collect($items)
+            ->pluck('kode_barang')
+            ->filter(fn ($kode) => filled($kode))
+            ->values()
+            ->all();
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images/barang', 'public');
+        if (count($postedCodes) !== count(array_unique($postedCodes))) {
+            return back()
+                ->withErrors(['items' => 'Terdapat kode barang yang duplikat di form.'])
+                ->withInput();
         }
 
-        $new = barang::create($data);
+        DB::transaction(function () use ($request, $items) {
+            $nextNumber = $this->getLastBarangCodeNumber() + 1;
+
+            foreach ($items as $index => $item) {
+                $data = [
+                    'kode_barang' => $item['kode_barang'] ?? $this->formatBarangCode($nextNumber++),
+                    'nama_barang' => $item['nama_barang'],
+                    'kategori_id' => $item['kategori_id'],
+                    'satuan' => $item['satuan'],
+                    'deskripsi' => $item['deskripsi'] ?? null,
+                    'harga' => $item['harga'],
+                ];
+
+                if ($request->hasFile("items.$index.image")) {
+                    $data['image'] = $request->file("items.$index.image")->store('images/barang', 'public');
+                }
+
+                $new = Barang::create($data);
+
+                if ($request->filled('gudang')) {
+                    Stok::create([
+                        'id_barang' => $new->id,
+                        'kode_gudang' => $request->gudang,
+                        'stok' => 0,
+                    ]);
+                }
+            }
+        });
+
+        $message = count($items) > 1
+            ? count($items) . ' barang berhasil ditambahkan!'
+            : 'Barang berhasil ditambahkan!';
 
         if ($request->filled('gudang')) {
-            stok::create([
-                'id_barang' => $new->id,
-                'kode_gudang' => $request->gudang,
-                // initial_stock removed from form: set initial stok to 0 by default
-                'stok' => 0,
-            ]);
-            // Redirect back to the gudang page (uses query param 'kode') so the shop view for that gudang
-            // shows the newly added item immediately after redirect.
-            return redirect()->route('barang-index', ['gudang' => $request->gudang])->with('success', 'Barang berhasil ditambahkan!');
-
+            return redirect()->route('barang-index', ['gudang' => $request->gudang])->with('success', $message);
         }
 
-        return redirect()->route('barang-index')->with('success', 'Barang berhasil ditambahkan!');
+        return redirect()->route('barang-index')->with('success', $message);
     }
 
     public function update(Request $request, $kode_barang)
@@ -231,17 +264,7 @@ class BarangController extends Controller
      */
     public function nextKode()
     {
-        // Find the last kode_barang that starts with BR and extract numeric suffix
-        $last = barang::where('kode_barang', 'like', 'BR%')
-            ->orderByRaw('LENGTH(kode_barang) desc, kode_barang desc')
-            ->first();
-
-        $num = 0;
-        if ($last && preg_match('/BR0*([0-9]+)$/', $last->kode_barang, $m)) {
-            $num = (int) $m[1];
-        }
-
-        $next = 'BR' . str_pad($num + 1, 3, '0', STR_PAD_LEFT);
+        $next = $this->formatBarangCode($this->getLastBarangCodeNumber() + 1);
 
         return response()->json(['kode' => $next]);
     }
